@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cosmic Explorer - Interactive Solar System</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Quicksand:wght@400;600;700&display=swap');
+:root{--primary-glow:#00F5FF;--secondary-glow:#FF00FF;--accent-color:#FFFF00;--correct-color:#4CAF50;--incorrect-color:#F44336;}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Quicksand',sans-serif;overflow:hidden;background:#000;color:#fff;cursor:grab}
+body:active{cursor:grabbing}
+#canvas-container{position:fixed;inset:0;z-index:1}
+.ui-overlay{position:fixed;z-index:10;pointer-events:none}
+.ui-overlay>*{pointer-events:auto}
+.top-bar{top:0;left:0;right:0;padding:20px;background:linear-gradient(to bottom,rgba(0,0,0,.9),transparent);display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:'Orbitron',monospace;font-size:28px;font-weight:900;background:linear-gradient(45deg,var(--primary-glow),var(--secondary-glow),var(--accent-color));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:flex;align-items:center;gap:10px;text-shadow:0 0 20px rgba(0,245,255,.5)}
+.score-panel{display:flex;gap:15px;align-items:center}
+.score-item{background:rgba(255,255,255,.1);padding:10px 20px;border-radius:25px;backdrop-filter:blur(10px);display:flex;align-items:center;gap:10px;transition:.3s;border:1px solid rgba(255,255,255,.2)}
+.score-item:hover{background:rgba(255,255,255,.2);transform:translateY(-2px);box-shadow:0 5px 15px rgba(0,245,255,.3)}
+.score-item i{font-size:20px;color:var(--primary-glow)}
+.planet-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:linear-gradient(135deg,rgba(0,0,0,.95),rgba(10,10,30,.95));backdrop-filter:blur(20px);border-radius:20px;padding:30px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;transition:.4s cubic-bezier(.175,.885,.32,1.275);border:2px solid rgba(255,255,255,.1);box-shadow:0 20px 60px rgba(0,0,0,.8);z-index:1000;display:flex;flex-direction:column}
+.planet-modal.active{transform:translate(-50%,-50%) scale(1)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.planet-name{font-family:'Orbitron',monospace;font-size:36px;font-weight:700;background:linear-gradient(45deg,var(--primary-glow),var(--secondary-glow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 0 30px rgba(0,245,255,.5)}
+.close-btn{background:rgba(255,255,255,.1);border:none;color:#fff;font-size:24px;width:40px;height:40px;border-radius:50%;cursor:pointer;transition:.3s;display:flex;align-items:center;justify-content:center}
+.close-btn:hover{background:rgba(255,0,0,.3);transform:rotate(90deg)}
+.planet-content{display:flex;flex-direction:column;gap:20px}
+.planet-image-container{width:100%;height:200px;border-radius:15px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.5);background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center}
+.planet-image{width:100%;height:100%;object-fit:cover}
+.image-error{display:none;flex-direction:column;align-items:center;justify-content:center;color:#aaa;font-size:16px;text-align:center;padding:20px}
+.image-error i{font-size:48px;margin-bottom:15px}
+.info-section{background:rgba(255,255,255,.05);padding:20px;border-radius:15px;border:1px solid rgba(255,255,255,.1)}
+.info-title{font-family:'Orbitron',monospace;font-size:20px;margin-bottom:15px;color:var(--primary-glow);display:flex;align-items:center;gap:10px}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px}
+.info-item{background:rgba(255,255,255,.05);padding:15px;border-radius:10px;border-left:3px solid var(--secondary-glow);transition:.3s}
+.info-item:hover{background:rgba(255,255,255,.1);transform:translateX(5px)}
+.info-label{font-size:14px;color:#aaa;margin-bottom:5px}
+.info-value{font-size:18px;font-weight:600;color:#fff}
+.fun-facts{background:rgba(255,255,255,.05);padding:20px;border-radius:15px;border:1px solid rgba(255,255,255,.1)}
+.fact-item{display:flex;align-items:flex-start;gap:15px;margin-bottom:15px;padding:15px;background:rgba(255,255,255,.03);border-radius:10px;transition:.3s}
+.fact-item:last-child{margin-bottom:0}
+.fact-item:hover{background:rgba(255,255,255,.08);transform:translateX(5px)}
+.fact-icon{font-size:30px;flex-shrink:0}
+.fact-text{font-size:16px;line-height:1.5}
+.modal-action-btn{background:var(--secondary-glow);color:#fff;padding:12px 25px;border:none;border-radius:30px;cursor:pointer;margin-top:20px;align-self:center;font-family:'Orbitron',monospace;font-size:16px;transition:.3s;box-shadow:0 5px 15px rgba(255,0,255,.3)}
+.modal-action-btn:hover{transform:scale(1.05);box-shadow:0 8px 25px rgba(255,0,255,.5)}
+.controls{bottom:30px;right:30px;display:flex;flex-direction:column;gap:15px}
+.control-btn{width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border:2px solid rgba(255,255,255,.3);color:#fff;font-size:24px;cursor:pointer;transition:.3s;display:flex;align-items:center;justify-content:center;box-shadow:0 5px 15px rgba(0,0,0,.3)}
+.control-btn:hover{background:rgba(0,245,255,.2);border-color:var(--primary-glow);transform:scale(1.1);box-shadow:0 5px 20px rgba(0,245,255,.4)}
+.control-btn.active{background:rgba(0,245,255,.3);border-color:var(--primary-glow)}
+.achievement-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0) rotate(180deg);background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:20px;padding:40px;text-align:center;transition:.5s cubic-bezier(.175,.885,.32,1.275);box-shadow:0 20px 60px rgba(0,0,0,.8);z-index:2000}
+.achievement-popup.active{transform:translate(-50%,-50%) scale(1) rotate(0deg)}
+.achievement-icon{font-size:80px;margin-bottom:20px;animation:bounce 1s ease infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+.achievement-title{font-family:'Orbitron',monospace;font-size:28px;margin-bottom:15px}
+.achievement-desc{font-size:18px;margin-bottom:25px}
+.achievement-btn{background:rgba(255,255,255,.2);border:none;color:#fff;padding:12px 25px;border-radius:30px;font-size:16px;cursor:pointer;transition:.3s;font-family:'Quicksand',sans-serif;font-weight:600}
+.achievement-btn:hover{background:rgba(255,255,255,.3);transform:scale(1.05)}
+.loading-screen{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:3000;transition:opacity .5s}
+.loading-screen.hidden{opacity:0;pointer-events:none}
+.loading-text{font-family:'Orbitron',monospace;font-size:24px;margin-bottom:30px;background:linear-gradient(45deg,var(--primary-glow),var(--secondary-glow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.loading-bar{width:300px;height:10px;background:rgba(255,255,255,.1);border-radius:10px;overflow:hidden}
+.loading-progress{height:100%;width:0%;background:linear-gradient(90deg,var(--primary-glow),var(--secondary-glow));border-radius:10px;transition:width .3s}
+.stars{position:fixed;inset:0;pointer-events:none}
+.star{position:absolute;background:#fff;border-radius:50%;animation:twinkle 3s infinite}
+@keyframes twinkle{0%,100%{opacity:.3}50%{opacity:1}}
+.celestial-label{position:absolute;background:rgba(0,0,0,.7);color:#fff;padding:8px 15px;border-radius:8px;font-size:16px;font-family:'Orbitron',monospace;pointer-events:auto;transform:translate(-50%,-50%);opacity:0;transition:.3s;z-index:5;border:2px solid rgba(255,255,255,.3);cursor:pointer;text-shadow:0 0 10px rgba(0,0,0,.8)}
+.celestial-label.visible{opacity:1}
+.celestial-label:hover{background:rgba(0,245,255,.3);border-color:var(--primary-glow);transform:translate(-50%,-50%) scale(1.1)}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-backdrop.active{opacity:1;pointer-events:auto}
+.quiz-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);opacity:0;background:linear-gradient(135deg,rgba(0,0,0,.95),rgba(10,10,30,.95));backdrop-filter:blur(20px);border-radius:20px;padding:30px;max-width:500px;width:90%;z-index:1001;display:flex;flex-direction:column;gap:15px;border:2px solid rgba(255,255,255,.1);box-shadow:0 20px 60px rgba(0,0,0,.8);transition:.3s;pointer-events:none}
+.quiz-modal.active{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:auto}
+.quiz-title{font-family:'Orbitron',monospace;font-size:28px;background:linear-gradient(45deg,var(--accent-color),var(--secondary-glow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center}
+.quiz-question{font-size:18px;text-align:center;margin:10px 0}
+.quiz-options{display:flex;flex-direction:column;gap:10px}
+.quiz-options button{background:rgba(255,255,255,.1);color:#fff;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,.2);cursor:pointer;transition:.3s;font-size:16px}
+.quiz-options button:not(:disabled):hover{background:rgba(0,245,255,.3)}
+.quiz-options button:disabled{cursor:not-allowed;opacity:.7}
+.quiz-options button.correct{background-color:var(--correct-color);border-color:var(--correct-color)}
+.quiz-options button.incorrect{background-color:var(--incorrect-color);border-color:var(--incorrect-color)}
+.quiz-feedback{text-align:center;font-size:18px;font-weight:bold;height:25px;margin-top:10px}
+.quiz-next{background:var(--primary-glow);color:#000;padding:12px 25px;border-radius:30px;border:none;cursor:pointer;align-self:center;font-family:'Orbitron',monospace;font-size:16px;margin-top:10px;transition:.3s;display:none}
+.quiz-next:hover{transform:scale(1.05)}
+.quiz-close-btn{position:absolute;top:15px;right:15px;background:none;border:none;color:#fff;font-size:20px;cursor:pointer}
+</style>
+</head>
+<body>
+  <div id="canvas-container"></div>
+  <div class="stars" id="stars"></div>
+
+  <div class="loading-screen" id="loading-screen">
+    <div class="loading-text">COSMIC EXPLORER</div>
+    <div class="loading-bar"><div class="loading-progress" id="loading-progress"></div></div>
+  </div>
+
+  <div class="ui-overlay top-bar">
+    <div class="logo"><i class="fas fa-rocket"></i> COSMIC EXPLORER</div>
+    <div class="score-panel">
+      <div class="score-item"><i class="fas fa-globe-americas"></i><span id="planets-visited">0 / 8 Planets Visited</span></div>
+    </div>
+  </div>
+
+  <div class="ui-overlay controls">
+    <button class="control-btn" id="reset-btn" title="Reset View"><i class="fas fa-home"></i></button>
+    <button class="control-btn" id="toggle-labels" title="Toggle Labels"><i class="fas fa-tags"></i></button>
+    <button class="control-btn" id="toggle-rotation" title="Toggle Motion"><i class="fas fa-sync-alt"></i></button>
+    <!-- Sound icon removed -->
+  </div>
+
+  <div class="modal-backdrop" id="modal-backdrop"></div>
+
+  <div class="planet-modal" id="planet-modal">
+    <div class="modal-header">
+      <h2 class="planet-name" id="modal-planet-name">Planet Name</h2>
+      <button class="close-btn" id="close-planet-modal"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="planet-content">
+      <div class="planet-image-container">
+        <img class="planet-image" id="planet-image" src="" alt="Planet">
+        <div class="image-error" id="image-error"><i class="fas fa-image"></i><span>Image not available</span></div>
+      </div>
+      <div class="info-section">
+        <h3 class="info-title"><i class="fas fa-info-circle"></i>Information</h3>
+        <div class="info-grid" id="planet-info-grid"></div>
+      </div>
+      <div class="fun-facts">
+        <h3 class="info-title"><i class="fas fa-lightbulb"></i>Interesting Facts</h3>
+        <div id="fun-facts-container"></div>
+      </div>
+      <button class="modal-action-btn" id="modal-quiz-btn">Take Quiz!</button>
+    </div>
+  </div>
+
+  <div class="quiz-modal" id="quiz-modal">
+    <button class="quiz-close-btn" id="quiz-close-btn"><i class="fas fa-times"></i></button>
+    <h2 class="quiz-title" id="quiz-title">Planet Quiz!</h2>
+    <p class="quiz-question" id="quiz-question"></p>
+    <div class="quiz-options" id="quiz-options"></div>
+    <div class="quiz-feedback" id="quiz-feedback"></div>
+    <button class="quiz-next" id="quiz-next">Next Question</button>
+  </div>
+
+  <div class="achievement-popup" id="achievement-popup">
+    <div class="achievement-icon" id="achievement-icon"><i class="fas fa-trophy"></i></div>
+    <h2 class="achievement-title" id="achievement-title">Achievement Unlocked!</h2>
+    <p class="achievement-desc" id="achievement-desc">You've completed a milestone!</p>
+    <button class="achievement-btn" id="achievement-btn">Continue Exploring</button>
+  </div>
+
+  <audio id="click-sound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_24ae73c21a.mp3" preload="auto"></audio>
+
+<script>
+'use strict';
+
+let scene,camera,renderer,controls;
+let sun,planets=[],asteroidBelt,labels=[];
+let raycaster,mouse;
+let isRotating=true,showLabels=false;
+const planetsVisited=new Set();
+
+// ---- Data ----
+const celestialData={
+  sun:{
+    name:"Sun",type:"Star",
+    info:{diameter:"1.39 million km",type:"G-Type Main-Sequence",surfaceTemp:"5,505 °C",age:"4.6 billion years"},
+    funFacts:[
+      {icon:"fas fa-fire",text:"The Sun holds ~99.86% of the Solar System’s mass."},
+      {icon:"fas fa-bolt",text:"Sunlight takes ~8 min 20 s to reach Earth."},
+      {icon:"fas fa-sun",text:"~1.3 million Earths could fit inside the Sun."}
+    ],
+    image:"https://upload.wikimedia.org/wikipedia/commons/b/b4/The_Sun_by_the_Atmospheric_Imaging_Assembly_of_NASA%27s_Solar_Dynamics_Observatory_-_20100819.jpg",
+    quiz:[
+      {question:"What percent of Solar System mass is the Sun?",options:["50%","75%","99.86%"],answer:"99.86%"},
+      {question:"Sunlight takes about how long to reach Earth?",options:["8.3 minutes","1 second","1 hour"],answer:"8.3 minutes"}
+    ]
+  },
+  asteroidBelt:{
+    name:"Asteroid Belt",type:"Asteroid Field",
+    info:{location:"Between Mars & Jupiter",width:"~1 AU",largestObject:"Ceres"},
+    funFacts:[
+      {icon:"fas fa-meteor",text:"It’s mostly empty space; average separations are huge."},
+      {icon:"fas fa-space-shuttle",text:"Spacecraft routinely traverse it without collisions."},
+      {icon:"fas fa-globe",text:"Ceres contains about a third of the belt’s total mass."}
+    ],
+    image:"", // will be filled with a data URL we generate at startup
+    quiz:[
+      {question:"Where is the Asteroid Belt?",options:["Between Mars & Jupiter","Beyond Neptune","Between Earth & Mars"],answer:"Between Mars & Jupiter"},
+      {question:"The Asteroid Belt is extremely crowded and dangerous.",options:["True","False"],answer:"False"}
+    ]
+  }
+};
+
+const planetData=[
+  {
+    name:"Mercury", radius:0.4, distance:10, color:0x8C7853, rotationSpeed:0.9, orbitSpeed:1.6,
+    info:{diameter:"4,879 km",distanceFromSun:"57.9 million km",dayLength:"59 Earth days",yearLength:"88 Earth days",moons:"0",type:"Terrestrial",tempRange:"-173 to 427 °C"},
+    funFacts:[
+      {icon:"fas fa-thermometer-half", text:"Has the most extreme temperature swings."},
+      {icon:"fas fa-running", text:"Fastest orbit: one year is 88 days."},
+      {icon:"fas fa-mountain", text:"Huge Caloris Basin crater (~1,550 km wide)."}
+    ],
+    image:"https://upload.wikimedia.org/wikipedia/commons/4/4a/Mercury_in_true_color.jpg",
+    quiz:[
+      {question:"How many moons does Mercury have?",options:["0","1","2"],answer:"0"},
+      {question:"A year on Mercury is shorter than its day.",options:["True","False"],answer:"False"}
+    ]
+  },
+  {
+    name:"Venus", radius:0.9, distance:15, color:0xFFC649, rotationSpeed:-0.3, orbitSpeed:1.2,
+    info:{diameter:"12,104 km",distanceFromSun:"108.2 million km",dayLength:"243 Earth days",yearLength:"225 Earth days",moons:"0",type:"Terrestrial",temperature:"~464 °C (Hottest)"},
+    funFacts:[
+      {icon:"fas fa-cloud", text:"Runaway greenhouse makes it the hottest planet."},
+      {icon:"fas fa-sync-alt", text:"Retrograde rotation; a day longer than a year."},
+      {icon:"fas fa-volcano", text:"Over 1,600 major volcanoes."}
+    ],
+    image:"https://upload.wikimedia.org/wikipedia/commons/e/e5/Venus-real_color.jpg",
+    quiz:[
+      {question:"Why is Venus hottest?",options:["Closest to Sun","Thick atmosphere traps heat","Many volcanoes"],answer:"Thick atmosphere traps heat"},
+      {question:"A day on Venus is longer than its year.",options:["True","False"],answer:"True"}
+    ]
+  },
+  {
+    name:"Earth", radius:1.0, distance:20, color:0x2E7FFF, rotationSpeed:1.2, orbitSpeed:1.0,
+    info:{diameter:"12,742 km",distanceFromSun:"149.6 million km",dayLength:"24 hours",yearLength:"365.25 days",moons:"1",type:"Terrestrial",temperature:"~15 °C (avg)"},
+    funFacts:[
+      {icon:"fas fa-water", text:"~71% surface covered by water."},
+      {icon:"fas fa-leaf", text:"Only known world with life."},
+      {icon:"fas fa-shield-alt", text:"Magnetic field shields from solar wind."}
+    ],
+    image:"https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg",
+    quiz:[
+      {question:"What percent of Earth is water?",options:["51%","71%","91%"],answer:"71%"},
+      {question:"Earth is the only planet with abundant surface liquid water.",options:["True","False"],answer:"True"}
+    ]
+  },
+  {
+    name:"Mars", radius:0.5, distance:25, color:0xCD5C5C, rotationSpeed:1.0, orbitSpeed:0.8,
+    info:{diameter:"6,779 km",distanceFromSun:"227.9 million km",dayLength:"24.6 hours",yearLength:"687 Earth days",moons:"2",type:"Terrestrial",temperature:"~-63 °C (avg)"},
+    funFacts:[
+      {icon:"fas fa-mountain", text:"Olympus Mons is the largest volcano in the Solar System."},
+      {icon:"fas fa-robot", text:"Rusty iron oxide gives its red hue."},
+      {icon:"fas fa-snowflake", text:"Polar caps of water ice and CO₂."}
+    ],
+    image:"https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg",
+    quiz:[
+      {question:"Why is Mars red?",options:["Very hot","Iron oxide on surface","Communist planet"],answer:"Iron oxide on surface"},
+      {question:"How many moons does Mars have?",options:["0","1","2"],answer:"2"}
+    ]
+  },
+  {
+    name:"Jupiter", radius:2.5, distance:35, color:0xD8CA9D, rotationSpeed:2.5, orbitSpeed:0.5,
+    info:{diameter:"139,820 km",distanceFromSun:"778.5 million km",dayLength:"9.9 hours",yearLength:"11.9 years",moons:"95",type:"Gas Giant",temperature:"~-145 °C (tops)"},
+    funFacts:[
+      {icon:"fas fa-wind", text:"Great Red Spot: a storm bigger than Earth."},
+      {icon:"fas fa-weight-hanging", text:"So massive other planets could fit inside."},
+      {icon:"fas fa-magnet", text:"Strongest planetary magnetic field."}
+    ],
+    image:"https://upload.wikimedia.org/wikipedia/commons/2/2b/Jupiter_and_its_shrunken_Great_Red_Spot.jpg",
+    quiz:[
+      {question:"Largest planet?",options:["Jupiter","Saturn","Earth"],answer:"Jupiter"},
+      {question:"Great Red Spot is…",options:["Desert","Storm","Volcano"],answer:"Storm"}
+    ]
+  },
+  {
+    name:"Saturn", radius:2.0, distance:45, color:0xFAD5A5, rotationSpeed:2.2, orbitSpeed:0.35,
+    info:{diameter:"116,460 km",distanceFromSun:"1.4 billion km",dayLength:"10.7 hours",yearLength:"29.5 years",moons:"146",type:"Gas Giant",temperature:"~-178 °C (tops)"},
+    funFacts:[
+      {icon:"fas fa-ring", text:"Rings made of ice and rock particles."},
+      {icon:"fas fa-water", text:"Less dense than water."},
+      {icon:"fas fa-moon", text:"Titan has thick atmosphere and methane lakes."}
+    ],
+    image:"https://upload.wikimedia.org/wikipedia/commons/c/c7/Saturn_during_Equinox.jpg",
+    quiz:[
+      {question:"Rings are made of:",options:["Gold","Gas","Ice and rock"],answer:"Ice and rock"},
+      {question:"Saturn’s density is:",options:["Highest","~Water","Less than water"],answer:"Less than water"}
+    ]
+  },
+  {
+    name:"Uranus", radius:1.5, distance:55, color:0x4FD0E7, rotationSpeed:1.1, orbitSpeed:0.25,
+    info:{diameter:"50,724 km",distanceFromSun:"2.9 billion km",dayLength:"17.2 hours",yearLength:"84 years",moons:"28",type:"Ice Giant",temperature:"~-224 °C (coldest)"},
+    funFacts:[
+      {icon:"fas fa-snowflake", text:"Record cold temperatures."},
+      {icon:"fas fa-sync-alt", text:"Spins on its side (~98° tilt)."},
+      {icon:"fas fa-gem", text:"Methane causes blue-green color."}
+    ],
+    image:"https://upload.wikimedia.org/wikipedia/commons/3/3d/Uranus2.jpg",
+    quiz:[
+      {question:"What’s unique about Uranus rotation?",options:["No rotation","On its side","Fastest"],answer:"On its side"},
+      {question:"Uranus is the coldest planet.",options:["True","False"],answer:"True"}
+    ]
+  },
+  {
+    name:"Neptune", radius:1.4, distance:65, color:0x4169E1, rotationSpeed:1.0, orbitSpeed:0.18,
+    info:{diameter:"49,244 km",distanceFromSun:"4.5 billion km",dayLength:"16.1 hours",yearLength:"165 years",moons:"16",type:"Ice Giant",temperature:"~-214 °C (tops)"},
+    funFacts:[
+      {icon:"fas fa-wind", text:"Fastest winds—over 2,000 km/h."},
+      {icon:"fas fa-calculator", text:"Discovered via math predictions."},
+      {icon:"fas fa-circle", text:"Had a Great Dark Spot storm."}
+    ],
+    image:"https://upload.wikimedia.org/wikipedia/commons/6/63/Neptune_-_Voyager_2_%2829347980845%29_flatten_crop.jpg",
+    quiz:[
+      {question:"Fastest winds belong to:",options:["Earth","Jupiter","Neptune"],answer:"Neptune"},
+      {question:"Neptune was discovered by:",options:["Accident","Math","Voyager"],answer:"Math"}
+    ]
+  }
+];
+
+// ---- Procedural planet textures ----
+function makePlanetTexture(hexColor, gas=false){
+  const c=document.createElement('canvas'); c.width=c.height=512;
+  const ctx=c.getContext('2d');
+  const base = '#'+('000000'+hexColor.toString(16)).slice(-6);
+  const grd=ctx.createRadialGradient(180,180,20,256,256,260);
+  grd.addColorStop(0, tweak(base, +0.35));
+  grd.addColorStop(0.6, base);
+  grd.addColorStop(1, tweak(base, -0.45));
+  ctx.fillStyle=grd; ctx.fillRect(0,0,512,512);
+  if(gas){
+    ctx.globalAlpha=0.25;
+    for(let i=0;i<14;i++){
+      const y=(i/14)*512;
+      ctx.fillStyle=(i%2)?'rgba(255,255,255,.25)':'rgba(0,0,0,.25)';
+      ctx.fillRect(0,y,512,6+Math.random()*6);
+    }
+    ctx.globalAlpha=1;
+  }else{
+    ctx.globalAlpha=0.15;
+    for(let i=0;i<900;i++){
+      const x=Math.random()*512, y=Math.random()*512, r=Math.random()*2.4;
+      ctx.fillStyle = Math.random()<0.5 ? 'white' : 'black';
+      ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha=1;
+  }
+  const tex=new THREE.CanvasTexture(c);
+  tex.anisotropy=8; tex.needsUpdate=true;
+  return tex;
+}
+function tweak(hex, amt){
+  const c=parseInt(hex.slice(1),16);
+  let r=(c>>16)&255,g=(c>>8)&255,b=c&255;
+  r=Math.round(Math.min(255,Math.max(0, r + 255*amt)));
+  g=Math.round(Math.min(255,Math.max(0, g + 255*amt)));
+  b=Math.round(Math.min(255,Math.max(0, b + 255*amt)));
+  return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+
+// ---- Generate a guaranteed Asteroid Belt image (data URL) ----
+function makeAsteroidBeltDataURL(){
+  const cw=900,ch=420;
+  const c=document.createElement('canvas'); c.width=cw; c.height=ch;
+  const ctx=c.getContext('2d');
+  // background stars
+  ctx.fillStyle="#000"; ctx.fillRect(0,0,cw,ch);
+  for(let i=0;i<300;i++){ ctx.fillStyle="rgba(255,255,255,"+(0.3+Math.random()*0.7)+")";
+    ctx.beginPath(); ctx.arc(Math.random()*cw, Math.random()*ch, Math.random()*1.2, 0, Math.PI*2); ctx.fill();}
+  // ring
+  ctx.translate(cw/2,ch/2);
+  for(let i=0;i<1800;i++){
+    const a=Math.random()*Math.PI*2;
+    const r=140+Math.random()*80; // ring thickness
+    const x=Math.cos(a)*r, y=Math.sin(a)*r*0.55; // ellipse
+    const s=Math.random()*1.8;
+    ctx.fillStyle = Math.random()<0.5 ? "rgba(210,190,150,.9)" : "rgba(120,100,80,.9)";
+    ctx.beginPath(); ctx.arc(x,y,s,0,Math.PI*2); ctx.fill();
+  }
+  // label
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.fillStyle="rgba(255,255,255,.9)"; ctx.font="700 22px Orbitron, sans-serif";
+  ctx.fillText("Asteroid Belt", 20, 36);
+  return c.toDataURL("image/png");
+}
+
+// ---- Init / Scene ----
+function init(){
+  scene=new THREE.Scene();
+  camera=new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,2000);
+  camera.position.set(0,40,110);
+  renderer=new THREE.WebGLRenderer({antialias:true});
+  renderer.setSize(window.innerWidth,window.innerHeight);
+  renderer.setPixelRatio(Math.min(2,window.devicePixelRatio));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+  controls=new THREE.OrbitControls(camera,renderer.domElement);
+  controls.enableDamping=true; controls.dampingFactor=0.06; controls.minDistance=20; controls.maxDistance=260;
+
+  scene.add(new THREE.AmbientLight(0x404040, 1.4));
+  const sunLight=new THREE.PointLight(0xFFFFFF, 3.2, 2000); sunLight.position.set(0,0,0); scene.add(sunLight);
+
+  createStarfield();
+  createSun();
+  createPlanets();
+  createAsteroidBelt();
+
+  raycaster=new THREE.Raycaster(); mouse=new THREE.Vector2();
+
+  setupEventListeners();
+  createBackgroundStars();
+
+  // Ensure Asteroid Belt image is set
+  celestialData.asteroidBelt.image = makeAsteroidBeltDataURL();
+}
+
+function setupEventListeners(){
+  window.addEventListener('resize', onWindowResize);
+  renderer.domElement.addEventListener('click', onObjectClick);
+  document.getElementById('close-planet-modal').addEventListener('click', closePlanetModal);
+  document.getElementById('modal-backdrop').addEventListener('click', ()=>{closePlanetModal(); closeQuizModal();});
+  document.getElementById('reset-btn').addEventListener('click', resetView);
+  document.getElementById('toggle-rotation').addEventListener('click', toggleRotation);
+  document.getElementById('toggle-labels').addEventListener('click', toggleLabels);
+  document.getElementById('achievement-btn').addEventListener('click', closeAchievement);
+  document.getElementById('quiz-close-btn').addEventListener('click', closeQuizModal);
+}
+
+function createStarfield(){
+  const g=new THREE.BufferGeometry();
+  const m=new THREE.PointsMaterial({color:0xFFFFFF,size:0.7});
+  const verts=[];
+  for(let i=0;i<10000;i++){
+    const x=(Math.random()-0.5)*2000, y=(Math.random()-0.5)*2000, z=(Math.random()-0.5)*2000;
+    if(x*x+y*y+z*z>100*100) verts.push(x,y,z);
+  }
+  g.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
+  scene.add(new THREE.Points(g,m));
+}
+
+function createSun(){
+  sun=new THREE.Mesh(new THREE.SphereGeometry(5,64,64), new THREE.MeshBasicMaterial({color:0xFFD24D}));
+  sun.userData={...celestialData.sun,isPlanet:false};
+  scene.add(sun);
+  createLabel("Sun", sun, sun.userData);
+}
+
+function createPlanets(){
+  planetData.forEach(d=>{
+    const isGas = ["Jupiter","Saturn","Uranus","Neptune"].includes(d.name);
+    const mat=new THREE.MeshStandardMaterial({map:makePlanetTexture(d.color,isGas),roughness:isGas?0.7:0.9,metalness:isGas?0.2:0.1});
+    const mesh=new THREE.Mesh(new THREE.SphereGeometry(d.radius,64,64), mat);
+    mesh.position.x=d.distance;
+    mesh.userData={...d, angle: Math.random()*Math.PI*2, isPlanet:true};
+    scene.add(mesh); planets.push(mesh);
+    createLabel(d.name, mesh, mesh.userData);
+
+    if(d.name==="Saturn"){
+      const ring=new THREE.Mesh(
+        new THREE.RingGeometry(d.radius*1.4, d.radius*2.2, 64),
+        new THREE.MeshBasicMaterial({color:0xFAD5A5,side:THREE.DoubleSide,transparent:true,opacity:0.8})
+      );
+      ring.rotation.x=Math.PI/2; mesh.add(ring);
+    }
+  });
+}
+
+function createAsteroidBelt(){
+  const count=1000, geom=new THREE.BufferGeometry(), pos=[];
+  for(let i=0;i<count;i++){
+    const dist=30+Math.random()*4, ang=Math.random()*Math.PI*2, y=(Math.random()-0.5)*1;
+    pos.push(Math.cos(ang)*dist,y,Math.sin(ang)*dist);
+  }
+  geom.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
+  const pts=new THREE.Points(geom,new THREE.PointsMaterial({color:0x8B7355,size:0.12,transparent:true}));
+  pts.userData={...celestialData.asteroidBelt,isPlanet:false}; scene.add(pts);
+
+  const labelAnchor=new THREE.Object3D(); labelAnchor.position.x=32; scene.add(labelAnchor);
+  createLabel("Asteroid Belt", labelAnchor, pts.userData);
+}
+
+function createLabel(text, object, data){
+  const div=document.createElement('div'); div.className='celestial-label'; div.textContent=text; document.body.appendChild(div);
+  div.addEventListener('click', (e)=>{ e.stopPropagation(); playClickSound(); showPlanetModal(data); });
+  labels.push({element:div, object});
+}
+
+function createBackgroundStars(){
+  const c=document.getElementById('stars'); let html='';
+  for(let i=0;i<120;i++){
+    const size=Math.random()*2+1;
+    const style=`width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*5}s;`;
+    html+=`<div class="star" style="${style}"></div>`;
+  }
+  c.innerHTML=html;
+}
+
+// ---- Loading bar + fail-safe ----
+function animateLoading(){
+  return new Promise(res=>{
+    const bar=document.getElementById('loading-progress'); let w=0;
+    const id=setInterval(()=>{ w+=2; bar.style.width=w+'%'; if(w>=100){clearInterval(id); setTimeout(res,300);} },16);
+    setTimeout(()=>{ tryHideLoader(); res(); }, 5000);
+  });
+}
+function tryHideLoader(){
+  const el=document.getElementById('loading-screen');
+  if(el && !el.classList.contains('hidden')) el.classList.add('hidden');
+}
+
+// ---- Interactions ----
+function onWindowResize(){ camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth,window.innerHeight); }
+function onObjectClick(e){
+  const rect=renderer.domElement.getBoundingClientRect();
+  const x=(e.clientX-rect.left)/rect.width, y=(e.clientY-rect.top)/rect.height;
+  mouse.x=x*2-1; mouse.y=-(y*2-1);
+  raycaster.setFromCamera(mouse,camera);
+  const hits=raycaster.intersectObjects([sun,...planets]);
+  if(hits.length>0){ playClickSound(); showPlanetModal(hits[0].object.userData); }
+}
+
+function showPlanetModal(data){
+  if(!data)return;
+  const image=document.getElementById('planet-image'), err=document.getElementById('image-error');
+  image.style.display='block'; err.style.display='none';
+  document.getElementById('modal-planet-name').textContent=data.name||'';
+  image.src=data.image||''; image.onerror=()=>{image.style.display='none'; err.style.display='flex';};
+
+  const grid=document.getElementById('planet-info-grid'); grid.innerHTML='';
+  Object.entries(data.info||{}).forEach(([k,v])=>{
+    const label=k.replace(/([A-Z])/g,' $1').replace(/^./,s=>s.toUpperCase());
+    grid.innerHTML+=`<div class="info-item"><div class="info-label">${label}</div><div class="info-value">${v}</div></div>`;
+  });
+
+  const facts=document.getElementById('fun-facts-container'); facts.innerHTML='';
+  (data.funFacts||[]).forEach(f=>{ facts.innerHTML+=`<div class="fact-item"><i class="fact-icon ${f.icon||'fas fa-star'}"></i><div class="fact-text">${f.text}</div></div>`; });
+
+  // Reset quiz state each time
+  currentQuizData = Array.isArray(data.quiz) ? data.quiz.slice() : [];
+  currentQ = 0;
+  document.getElementById('quiz-title').textContent=`${data.name} Quiz`;
+  document.getElementById('quiz-question').textContent='';
+  document.getElementById('quiz-options').innerHTML='';
+  document.getElementById('quiz-feedback').textContent='';
+  document.getElementById('quiz-next').style.display='none';
+
+  document.getElementById('modal-quiz-btn').onclick=()=>{ playClickSound(); startQuiz(data); };
+
+  document.getElementById('modal-backdrop').classList.add('active');
+  document.getElementById('planet-modal').classList.add('active');
+
+  if(data.isPlanet===true) markPlanetAsVisited(data.name);
+}
+
+function closePlanetModal(){ document.getElementById('planet-modal').classList.remove('active'); document.getElementById('modal-backdrop').classList.remove('active'); }
+
+// ---- Quiz ----
+let currentQuizData=[], currentQ=0;
+function startQuiz(data){
+  if(!data.quiz || data.quiz.length===0){
+    alert('No quiz available for this object yet!');
+    return;
+  }
+  currentQuizData=data.quiz.slice(); currentQ=0;
+  document.getElementById('quiz-modal').classList.add('active');
+  document.getElementById('modal-backdrop').classList.add('active');
+  showNextQuestion();
+}
+function showNextQuestion(){
+  if(currentQ>=currentQuizData.length){
+    closeQuizModal();
+    showAchievement("Quiz Master!","You've completed the quiz!");
+    return;
+  }
+  const q=currentQuizData[currentQ];
+  document.getElementById('quiz-question').textContent=q.question;
+  const optDiv=document.getElementById('quiz-options'); optDiv.innerHTML='';
+  q.options.forEach(opt=>{
+    const b=document.createElement('button'); b.textContent=opt;
+    b.onclick=()=>handleAnswer(b,opt,q.answer);
+    optDiv.appendChild(b);
+  });
+  const feedback=document.getElementById('quiz-feedback');
+  feedback.textContent=''; feedback.style.color='#fff';
+  const next=document.getElementById('quiz-next');
+  next.style.display='none';
+  next.onclick=showNextQuestion;
+}
+function handleAnswer(btn,sel,ans){
+  playClickSound();
+  document.querySelectorAll('.quiz-options button').forEach(b=>b.disabled=true);
+  const feedback=document.getElementById('quiz-feedback');
+  if(sel===ans){
+    btn.classList.add('correct'); feedback.textContent='Correct!'; feedback.style.color='var(--correct-color)';
+  }else{
+    btn.classList.add('incorrect');
+    document.querySelectorAll('.quiz-options button').forEach(b=>{ if(b.textContent===ans) b.classList.add('correct');});
+    feedback.textContent=`Correct: ${ans}`; feedback.style.color='var(--incorrect-color)';
+  }
+  currentQ++; document.getElementById('quiz-next').style.display='block';
+}
+function closeQuizModal(){ document.getElementById('quiz-modal').classList.remove('active'); if(!document.getElementById('planet-modal').classList.contains('active')) document.getElementById('modal-backdrop').classList.remove('active'); }
+
+// ---- Misc ----
+function playClickSound(){ const el=document.getElementById('click-sound'); if(!el) return; try{ el.currentTime=0; el.play().catch(()=>{});}catch(e){} }
+function resetView(){ playClickSound(); controls.reset(); camera.position.set(0,40,110); }
+function toggleRotation(){ isRotating=!isRotating; document.querySelector('#toggle-rotation i').classList.toggle('fa-spin', isRotating); playClickSound(); }
+function toggleLabels(){ showLabels=!showLabels; document.getElementById('toggle-labels').classList.toggle('active', showLabels); playClickSound(); }
+
+function updateLabels(){
+  labels.forEach(l=>{
+    const visible=showLabels; l.element.classList.toggle('visible', visible);
+    if(visible){
+      const v=new THREE.Vector3(); l.object.getWorldPosition(v); v.project(camera);
+      l.element.style.left=((v.x*0.5+0.5)*window.innerWidth)+'px';
+      l.element.style.top=(( -v.y*0.5+0.5)*window.innerHeight)+'px';
+    }
+  });
+}
+
+function showAchievement(title,desc){
+  document.getElementById('achievement-title').textContent=title;
+  document.getElementById('achievement-desc').textContent=desc;
+  document.getElementById('achievement-popup').classList.add('active');
+  document.getElementById('modal-backdrop').classList.add('active');
+}
+function closeAchievement(){ document.getElementById('achievement-popup').classList.remove('active'); document.getElementById('modal-backdrop').classList.remove('active'); playClickSound(); }
+
+function markPlanetAsVisited(name){
+  if(!planetsVisited.has(name)){
+    planetsVisited.add(name);
+    document.getElementById('planets-visited').textContent = `${planetsVisited.size} / 8 Planets Visited`;
+    if(planetsVisited.size===1) showAchievement("First Steps","You visited your first planet!");
+    else if(planetsVisited.size===4) showAchievement("Inner Worlds Traveler","All terrestrial planets visited!");
+    else if(planetsVisited.size===8) showAchievement("Grand Tour Complete!","You've visited all 8 planets!");
+  }
+}
+
+// ---- Animate ----
+const clock=new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  const t=clock.getElapsedTime();
+  if(isRotating){
+    sun.rotation.y += 0.0015;
+    planets.forEach(p=>{
+      p.rotation.y += (p.userData.rotationSpeed||1)*0.01;
+      const s=(p.userData.orbitSpeed||1)*0.4, a=t*s + p.userData.angle;
+      p.position.x=Math.cos(a)*p.userData.distance;
+      p.position.z=Math.sin(a)*p.userData.distance;
+    });
+  }
+  updateLabels();
+  controls.update();
+  renderer.render(scene,camera);
+}
+
+// ---- Startup (with loader safety) ----
+function createBackgroundStars(){
+  const starsContainer=document.getElementById('stars'); let starsHTML='';
+  for(let i=0;i<120;i++){
+    const size=Math.random()*2+1;
+    const style=`width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*5}s;`;
+    starsHTML+=`<div class="star" style="${style}"></div>`;
+  }
+  starsContainer.innerHTML=starsHTML;
+}
+function animateLoading(){
+  return new Promise(res=>{
+    const bar=document.getElementById('loading-progress'); let w=0;
+    const id=setInterval(()=>{ w+=2; bar.style.width=w+'%'; if(w>=100){clearInterval(id); setTimeout(res,300);} },16);
+    setTimeout(()=>{ tryHideLoader(); res(); }, 5000);
+  });
+}
+document.addEventListener('DOMContentLoaded', async ()=>{
+  try{ init(); }catch(err){ console.error('Init error:', err); }
+  finally{
+    try{ await animateLoading(); }catch(_){}
+    tryHideLoader();
+    animate();
+  }
+});
+window.addEventListener('error', ()=>{ tryHideLoader(); });
+</script>
+</body>
+</html>
