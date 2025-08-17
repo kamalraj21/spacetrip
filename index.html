@@ -2,13 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>Cosmic Explorer</title>
-
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-
 <style>
 :root{
   --glow:#00F5FF;--glow2:#FF00FF;--accent:#FFFF00;
@@ -16,40 +14,33 @@
   --glass:rgba(255,255,255,.1);--glass-b:rgba(255,255,255,.25)
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%}
+html,body{height:100%;overflow:hidden}
 body{background:#000;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto;overflow:hidden;-webkit-tap-highlight-color:transparent}
 #canvas{position:fixed;inset:0;z-index:1;touch-action:none}
-
-/* Top bar */
 .top{position:fixed;inset:0 0 auto 0;padding:10px 12px;background:linear-gradient(to bottom,rgba(0,0,0,.85),transparent);display:flex;justify-content:space-between;align-items:center;z-index:10;gap:8px}
 .brand{font-weight:900;letter-spacing:.5px;display:flex;align-items:center;gap:8px;background:linear-gradient(45deg,var(--glow),var(--glow2),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .panel{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.pill{background:var(--glass);border:1px solid var(--glass-b);backdrop-filter:blur(10px);padding:6px 10px;border-radius:18px;display:flex;gap:8px;align-items:center;font-size:13px;line-height:1}
+.glass-ui{background:var(--glass);border:1px solid var(--glass-b);backdrop-filter:blur(10px)}
+.pill{padding:6px 10px;border-radius:18px;display:flex;gap:8px;align-items:center;font-size:13px;line-height:1;color:#fff}
 .pill i{color:var(--glow)}
 .level{font-weight:700}
-
-/* Controls */
 .controls{position:fixed;bottom:18px;right:18px;z-index:10;display:flex;flex-direction:column;gap:10px}
-.btn{width:48px;height:48px;border-radius:50%;border:1px solid var(--glass-b);background:var(--glass);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px}
+.btn{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px}
 .btn:active{transform:scale(.98)}
 .btn.active{background:rgba(0,245,255,.25);border-color:var(--glow)}
-
-/* Character Guide */
 .character-guide{position:fixed;bottom:80px;left:18px;z-index:10;width:220px;background:var(--glass);border:1px solid var(--glass-b);backdrop-filter:blur(10px);border-radius:12px;padding:10px;display:none;flex-direction:column;align-items:center;transition:all 0.3s ease}
 .character-guide.on{display:flex}
 .character-avatar{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--glow),var(--glow2));display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:8px}
 .character-name{font-weight:700;font-size:14px;margin-bottom:4px}
 .character-message{font-size:12px;text-align:center;line-height:1.3}
 .character-hint{font-size:11px;opacity:0.8;margin-top:6px;font-style:italic}
-
-/* Backdrop + modals */
 .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:20;opacity:0;pointer-events:none;transition:.25s}
 .backdrop.on{opacity:1;pointer-events:auto}
 .modal{position:fixed;inset:auto 0 0 0;margin:auto;background:linear-gradient(135deg,rgba(0,0,0,.95),rgba(10,10,30,.95));border:1px solid rgba(255,255,255,.12);border-radius:14px;width:min(680px,94vw);max-height:86vh;overflow:auto;z-index:30;opacity:0;pointer-events:none;transform:translateY(8px);transition:.2s}
 .modal.on{opacity:1;pointer-events:auto;transform:none}
 .mh{position:sticky;top:0;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.12)}
 .h{font-weight:800;background:linear-gradient(45deg,var(--glow),var(--glow2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.close{border:1px solid var(--glass-b);background:var(--glass);color:#fff;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center}
+.close{color:#fff;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center}
 .mc{padding:12px;display:flex;flex-direction:column;gap:12px}
 .imgbox{height:200px;background:rgba(255,255,255,.06);border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .mc img{width:100%;height:100%;object-fit:cover}
@@ -58,8 +49,6 @@ body{background:#000;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Rob
 .gi{background:rgba(255,255,255,.04);border-left:3px solid var(--glow2);border-radius:10px;padding:8px}
 .fact{display:flex;gap:10px;background:rgba(255,255,255,.03);padding:8px;border-radius:10px}
 .primary{align-self:center;border:none;background:var(--glow2);color:#fff;padding:10px 16px;border-radius:999px}
-
-/* Quiz */
 .quiz{position:fixed;inset:auto 0 0 0;margin:auto;background:linear-gradient(135deg,rgba(0,0,0,.95),rgba(10,10,30,.95));border:1px solid rgba(255,255,255,.12);border-radius:14px;width:min(560px,94vw);z-index:40;opacity:0;pointer-events:none;transform:translateY(8px);transition:.2s}
 .quiz.on{opacity:1;pointer-events:auto;transform:none}
 .qc{padding:12px}
@@ -72,16 +61,10 @@ body{background:#000;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Rob
 .qfooter{position:sticky;bottom:0;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);display:flex;gap:8px;justify-content:center;padding:10px;border-top:1px solid rgba(255,255,255,.12)}
 .ghost{border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.12);color:#fff;border-radius:999px;padding:10px 16px}
 .primary2{border:none;background:var(--glow);color:#000;border-radius:999px;padding:10px 16px}
-
-/* Progress Bar */
 .progress-container{position:fixed;top:62px;left:10px;z-index:10;width:calc(100% - 20px);height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
 .progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--glow),var(--glow2),var(--accent));border-radius:3px;transition:width 0.5s ease}
-
-/* Labels (smoothed + collision-limited) */
 .label{position:absolute;z-index:5;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.3);padding:5px 8px;border-radius:8px;font-size:13px;transform:translate(-50%,-50%);opacity:0;transition:opacity .18s;white-space:nowrap;pointer-events:auto}
 .label.on{opacity:1}
-
-/* Loader + error */
 .loader{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;z-index:100;transition:.3s}
 .loader.hide{opacity:0;pointer-events:none}
 .ltext{font-weight:900;margin-bottom:10px;background:linear-gradient(45deg,var(--glow),var(--glow2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
@@ -90,82 +73,88 @@ body{background:#000;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Rob
 .lprog{height:100%;width:0;background:linear-gradient(90deg,var(--glow),var(--glow2))}
 .err{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:200}
 .err.show{display:flex}
-.err > div{background:rgba(20,20,30,.95);border:1px solid rgba(255,255,255,.15);padding:14px;border-radius:12px;max-width:min(560px,92vw)}
-
-/* Coach */
+.err > div{background:rgba(20,20,30,.95);border:1px solid rgba(255,255,255,.15);padding:14px;border-radius:12px;max-width:min(560px,92vw);text-align:center;display:flex;flex-direction:column;gap:10px}
 .coach{position:fixed;inset:0;display:none;z-index:60}
-.coach.on{display:block}
-.spot{position:absolute;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.6),0 0 0 2px var(--glow)}
-.tip{position:absolute;max-width:min(92vw,360px);background:rgba(12,14,24,.96);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:10px}
+.coach.on{display:block;pointer-events:none}
+.spot{position:absolute;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.6),0 0 0 2px var(--glow);pointer-events:none}
+.tip{position:absolute;max-width:min(92vw,360px);background:rgba(12,14,24,.96);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:10px;pointer-events:auto}
 .thead{font-weight:800;margin-bottom:6px}
 .cactions{display:flex;justify-content:space-between;gap:8px;margin-top:8px}
 .dots{display:flex;gap:6px;margin-top:6px}
 .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.35)}
 .dot.on{background:var(--glow)}
 .small{font-size:12px;opacity:.8;margin-top:6px}
-
-/* Achievements Drawer */
 .drawer{position:fixed;top:62px;right:10px;z-index:15;background:rgba(0,0,0,.65);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:10px;max-width:300px;display:none}
 .drawer.on{display:block}
 .badges{display:flex;flex-wrap:wrap;gap:8px}
 .badge{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);padding:6px 8px;border-radius:999px;font-size:12px}
 .badge i{color:var(--accent)}
-
-/* Confetti */
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:70}
-
-/* Mobile tweaks */
 @media (max-width:768px){
+  .top { flex-direction: column; align-items: center; gap: 12px; }
   .controls{right:50%;transform:translateX(50%);flex-direction:row}
   .label{font-size:12px}
   .imgbox{height:170px}
   .character-guide{width:180px;bottom:70px;left:10px}
+  .modal, .quiz {
+    width: 95vw;
+    max-height: 80vh;
+    bottom: 10px;
+    top: auto;
+    transform: none !important;
+    border-radius: 14px 14px 0 0;
+  }
+  .modal.on, .quiz.on {
+    transform: none !important;
+  }
+  .mc {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  body.modal-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+  }
 }
 </style>
 </head>
 <body>
 <canvas id="canvas"></canvas>
-
 <div class="top">
   <div class="brand"><i class="fa-solid fa-rocket"></i> COSMIC EXPLORER</div>
   <div class="panel">
-    <div class="pill"><i class="fa-solid fa-globe-americas"></i><span id="visitedText">0 / 8 Visited</span></div>
-    <div class="pill"><i class="fa-solid fa-star"></i><span id="pointsText">0 pts</span></div>
-    <div class="pill level"><i class="fa-solid fa-signal"></i><span id="levelText">Space Cadet</span></div>
-    <button class="pill" id="btnAchievements" title="Achievements"><i class="fa-solid fa-trophy"></i><span>Achievements</span></button>
+    <div class="pill glass-ui"><i class="fa-solid fa-globe-americas"></i><span id="visitedText">0 / 8 Visited</span></div>
+    <div class="pill glass-ui"><i class="fa-solid fa-star"></i><span id="pointsText">0 pts</span></div>
+    <div class="pill glass-ui level"><i class="fa-solid fa-signal"></i><span id="levelText">Space Cadet</span></div>
+    <button class="pill glass-ui" id="btnAchievements" title="Achievements"><i class="fa-solid fa-trophy"></i><span>Achievements</span></button>
   </div>
 </div>
-
 <div class="progress-container">
   <div class="progress-bar" id="progressBar"></div>
 </div>
-
 <div class="character-guide" id="characterGuide">
   <div class="character-avatar" id="characterAvatar">👨‍🚀</div>
   <div class="character-name" id="characterName">Captain Cosmos</div>
   <div class="character-message" id="characterMessage">Welcome to Cosmic Explorer!</div>
   <div class="character-hint" id="characterHint">Tap on planets to learn more</div>
 </div>
-
 <div class="controls">
-  <button class="btn" id="btnLabels" title="Labels"><i class="fa-solid fa-tags"></i></button>
-  <button class="btn active" id="btnMotion" title="Pause / Resume"><i class="fa-solid fa-pause"></i></button>
-  <button class="btn" id="btnOrbits" title="Orbit paths"><i class="fa-solid fa-ring"></i></button>
-  <button class="btn" id="btnHelp" title="Help / Tour"><i class="fa-solid fa-question"></i></button>
+  <button class="btn glass-ui" id="btnLabels" title="Labels"><i class="fa-solid fa-tags"></i></button>
+  <button class="btn glass-ui active" id="btnMotion" title="Pause / Resume"><i class="fa-solid fa-pause"></i></button>
+  <button class="btn glass-ui" id="btnOrbits" title="Orbit paths"><i class="fa-solid fa-ring"></i></button>
+  <button class="btn glass-ui" id="btnHelp" title="Help / Tour"><i class="fa-solid fa-question"></i></button>
 </div>
-
 <div class="drawer" id="achDrawer">
   <div style="font-weight:800;margin-bottom:6px">Achievements</div>
   <div class="badges" id="badges"></div>
 </div>
-
 <div class="backdrop" id="backdrop"></div>
-
-<!-- Planet modal -->
 <div class="modal" id="planetModal" aria-modal="true" role="dialog">
   <div class="mh">
     <div class="h" id="pmTitle">Planet</div>
-    <button class="close" id="pmClose"><i class="fa-solid fa-times"></i></button>
+    <button class="close glass-ui" id="pmClose"><i class="fa-solid fa-times"></i></button>
   </div>
   <div class="mc">
     <div class="imgbox">
@@ -183,12 +172,10 @@ body{background:#000;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Rob
     <button class="primary" id="pmQuiz">Take Quiz!</button>
   </div>
 </div>
-
-<!-- Quiz modal -->
 <div class="quiz" id="quizModal" aria-modal="true" role="dialog">
   <div class="mh">
     <div class="h" id="qTitle">Quiz</div>
-    <button class="close" id="qClose"><i class="fa-solid fa-times"></i></button>
+    <button class="close glass-ui" id="qClose"><i class="fa-solid fa-times"></i></button>
   </div>
   <div class="qc">
     <div class="q" id="qQuestion"></div>
@@ -200,8 +187,6 @@ body{background:#000;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Rob
     <button class="primary2" id="qNext" style="display:none">Next</button>
   </div>
 </div>
-
-<!-- Coach marks -->
 <div class="coach" id="coach">
   <div class="spot" id="spot"></div>
   <div class="tip" id="tip">
@@ -218,38 +203,52 @@ body{background:#000;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Rob
     <label class="small"><input type="checkbox" id="cNever"> Don't show again</label>
   </div>
 </div>
-
-<!-- Confetti -->
 <canvas id="confetti"></canvas>
-
-<!-- Loader -->
 <div class="loader" id="loader">
   <div class="ltext">COSMIC EXPLORER</div>
   <div class="lsub" id="lstatus">Preparing assets…</div>
   <div class="lbar"><div class="lprog" id="lprog"></div></div>
 </div>
-
-<!-- Error panel -->
 <div class="err" id="err"><div>
   <div style="font-weight:800;margin-bottom:6px">Something went wrong</div>
-  <div id="errmsg" style="opacity:.85;margin-bottom:10px">The app failed to start. Try reloading.</div>
-  <button class="primary2" onclick="location.reload()">Reload</button>
+  <div id="errmsg" style="opacity:.85;">Try reloading. If the problem persists, resetting your progress may help.</div>
+  <div style="display:flex;gap:8px;justify-content:center">
+    <button class="primary2" onclick="location.reload()">Reload</button>
+    <button class="ghost" onclick="resetGame()">Reset Progress</button>
+  </div>
 </div></div>
-
 <script>
 'use strict';
+// Utility to safely parse JSON from localStorage
+function safeJsonParse(key, defaultValue) {
+    try {
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : defaultValue;
+    } catch (e) {
+        console.error(`Error parsing JSON from localStorage key "${key}":`, e);
+        return defaultValue;
+    }
+}
 
-/* ---------- Global variables ---------- */
+function resetGame() {
+  const gameKeys = ['ce_visit_v1', 'ce_quiz_v1', 'ce_points_v1', 'ce_achs_v1', 'ce_coach_done'];
+  gameKeys.forEach(key => localStorage.removeItem(key));
+  location.reload();
+}
+
+// Global variables
 let scene, camera, renderer, controls, sun, planets = [], orbitRings = [], raycaster, mouse, clock;
 let showLabels = false, isMotion = true, showOrbits = false;
-const visited = new Set(JSON.parse(localStorage.getItem('ce_visit_v1') || '[]'));
+const visited = new Set(safeJsonParse('ce_visit_v1', []));
+const quizzesCompleted = new Set(safeJsonParse('ce_quiz_v1', []));
 const visitedText = document.getElementById('visitedText');
 let points = Number(localStorage.getItem('ce_points_v1') || 0);
 const pointsText = document.getElementById('pointsText');
-const achievements = new Set(JSON.parse(localStorage.getItem('ce_achs_v1') || '[]'));
+const achievements = new Set(safeJsonParse('ce_achs_v1', []));
 const levelText = document.getElementById('levelText');
 const progressBar = document.getElementById('progressBar');
-
+const meteors = [], comets = [], shootingStars = [], starLayers = [], labelsArr = [];
+let quizData = [], qIdx = 0, currentPlanet = null, currentStreak = 0, questionsAnswered = 0;
 // Character guide system
 const characters = [
   { id: 'captain', name: 'Captain Cosmos', avatar: '👨‍🚀', messages: [
@@ -271,9 +270,7 @@ const characters = [
     { text: "Neptune has the strongest winds!", hint: "They can reach up to 1,200 mph" }
   ]}
 ];
-
-let currentCharacter = 0;
-let currentMessageIndex = 0;
+let currentCharacter = 0, currentMessageIndex = 0;
 const characterGuide = document.getElementById('characterGuide');
 const characterAvatar = document.getElementById('characterAvatar');
 const characterName = document.getElementById('characterName');
@@ -289,500 +286,10 @@ const ranks = [
   { name: "Cosmic Master", minPoints: 500, maxPoints: 999 },
   { name: "Universe Conqueror", minPoints: 1000, maxPoints: Infinity }
 ];
-
-// Meteor, comet, and shooting star arrays
-const meteors = [];
-const comets = [];
-const shootingStars = [];
-const starLayers = [];
-const labelsArr = [];
-
-// Quiz variables
-let quizData = [], qIdx = 0, currentPlanet = null, currentStreak = 0;
-
-/* ---------- Utility functions ---------- */
-function clamp(v, min, max) {
-  return Math.max(min, Math.min(max, v));
-}
-
-function hexToRgbInt(hexInt) {
-  const n = (Number(hexInt) >>> 0);
-  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
-}
-
-function tintRgb(rgb, amt) {
-  return {
-    r: clamp(rgb.r + 255 * amt, 0, 255),
-    g: clamp(rgb.g + 255 * amt, 0, 255),
-    b: clamp(rgb.b + 255 * amt, 0, 255)
-  };
-}
-
-function rgbaStr(r, g, b, a) {
-  return `rgba(${r | 0},${g | 0},${b | 0},${a})`;
-}
-
-/* ---------- Loader & errors ---------- */
-const loader = document.getElementById('loader');
-const lprog = document.getElementById('lprog');
-const lstatus = document.getElementById('lstatus');
-
-function setStatus(s) {
-  lstatus.textContent = s;
-}
-
-function hideLoader() {
-  loader.classList.add('hide');
-}
-
-// Initialize loader progress
-(function() {
-  let w = 0;
-  const id = setInterval(() => {
-    w += 3;
-    lprog.style.width = w + '%';
-    if (w >= 100) clearInterval(id);
-  }, 20);
-})();
-
-window.addEventListener('error', e => {
-  hideLoader();
-  document.getElementById('errmsg').textContent = 'Error: ' + (e.message || 'Unknown');
-  document.getElementById('err').classList.add('show');
-});
-
-window.addEventListener('unhandledrejection', e => {
-  hideLoader();
-  document.getElementById('errmsg').textContent = 'Startup issue: ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason));
-  document.getElementById('err').classList.add('show');
-});
-
-/* ---------- Level and progress functions ---------- */
-function updateLevel() {
-  const currentRank = ranks.find(rank => points >= rank.minPoints && points <= rank.maxPoints);
-  if (currentRank) {
-    levelText.textContent = currentRank.name;
-  }
-  
-  // Update progress bar
-  const progress = (points / 1000) * 100; // Max 1000 points for full bar
-  progressBar.style.width = `${Math.min(progress, 100)}%`;
-}
-
-function showCharacterGuide() {
-  const character = characters[currentCharacter];
-  const message = character.messages[currentMessageIndex];
-  
-  characterAvatar.textContent = character.avatar;
-  characterName.textContent = character.name;
-  characterMessage.textContent = message.text;
-  characterHint.textContent = message.hint;
-  
-  characterGuide.classList.add('on');
-  
-  // Cycle through messages and characters
-  currentMessageIndex = (currentMessageIndex + 1) % character.messages.length;
-  if (currentMessageIndex === 0) {
-    currentCharacter = (currentCharacter + 1) % characters.length;
-  }
-  
-  // Hide after 5 seconds
-  setTimeout(() => {
-    characterGuide.classList.remove('on');
-  }, 5000);
-}
-
-/* ---------- Starfield functions ---------- */
-function createStarLayer(count, size, twinkleSpeed, drift) {
-  const g = new THREE.BufferGeometry();
-  const pos = new Float32Array(count * 3);
-  
-  for (let i = 0; i < count; i++) {
-    let x = (Math.random() - 0.5) * 2400, 
-        y = (Math.random() - 0.5) * 1800, 
-        z = (Math.random() - 0.5) * 2400;
-    if (x * x + y * y + z * z < 120 * 120) { i--; continue; }
-    pos[i * 3] = x;
-    pos[i * 3 + 1] = y;
-    pos[i * 3 + 2] = z;
-  }
-  
-  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  const m = new THREE.PointsMaterial({
-    color: 0xFFFFFF,
-    size,
-    transparent: true,
-    opacity: 0.85,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    sizeAttenuation: true
-  });
-  
-  const p = new THREE.Points(g, m);
-  p.userData = {
-    twinkle: (Math.random() * Math.PI * 2), 
-    speed: twinkleSpeed, 
-    drift
-  };
-  
-  scene.add(p);
-  starLayers.push(p);
-}
-
-function updateStars(dt) {
-  for (const p of starLayers) {
-    p.userData.twinkle += dt * p.userData.speed;
-    const base = 0.6 + 0.4 * Math.sin(p.userData.twinkle);
-    p.material.opacity = base;
-    p.rotation.y += p.userData.drift * dt * 0.05;
-  }
-}
-
-/* ---------- Meteor, comet, and shooting star functions ---------- */
-function createMeteor() {
-  const geometry = new THREE.SphereGeometry(0.1, 8, 8);
-  const material = new THREE.MeshBasicMaterial({ 
-    color: 0xFF5722,
-    transparent: true,
-    opacity: 0.8
-  });
-  const meteor = new THREE.Mesh(geometry, material);
-  
-  // Random starting position
-  const angle = Math.random() * Math.PI * 2;
-  const distance = 100 + Math.random() * 50;
-  meteor.position.set(
-    Math.cos(angle) * distance,
-    (Math.random() - 0.5) * 50,
-    Math.sin(angle) * distance
-  );
-  
-  // Random velocity towards center
-  const speed = 5 + Math.random() * 10;
-  meteor.userData.velocity = new THREE.Vector3(
-    -Math.cos(angle) * speed,
-    (Math.random() - 0.5) * 2,
-    -Math.sin(angle) * speed
-  );
-  
-  meteor.userData.life = 1.0;
-  scene.add(meteor);
-  meteors.push(meteor);
-}
-
-function createComet() {
-  const cometGroup = new THREE.Group();
-  
-  // Comet head
-  const headGeometry = new THREE.SphereGeometry(0.3, 16, 16);
-  const headMaterial = new THREE.MeshBasicMaterial({ 
-    color: 0x4FC3F7,
-    transparent: true,
-    opacity: 0.9
-  });
-  const head = new THREE.Mesh(headGeometry, headMaterial);
-  cometGroup.add(head);
-  
-  // Comet tail
-  const tailGeometry = new THREE.ConeGeometry(0.5, 3, 8);
-  const tailMaterial = new THREE.MeshBasicMaterial({ 
-    color: 0x81D4FA,
-    transparent: true,
-    opacity: 0.7
-  });
-  const tail = new THREE.Mesh(tailGeometry, tailMaterial);
-  tail.position.z = 1.5;
-  tail.rotation.x = Math.PI / 2;
-  cometGroup.add(tail);
-  
-  // Random starting position at edge of scene
-  const angle = Math.random() * Math.PI * 2;
-  const distance = 150;
-  cometGroup.position.set(
-    Math.cos(angle) * distance,
-    (Math.random() - 0.5) * 40,
-    Math.sin(angle) * distance
-  );
-  
-  // Velocity towards center with curve
-  const speed = 2 + Math.random() * 3;
-  cometGroup.userData.velocity = new THREE.Vector3(
-    -Math.cos(angle) * speed,
-    (Math.random() - 0.5) * 0.5,
-    -Math.sin(angle) * speed
-  );
-  
-  cometGroup.userData.angle = angle;
-  cometGroup.userData.speed = speed;
-  cometGroup.userData.life = 1.0;
-  
-  scene.add(cometGroup);
-  comets.push(cometGroup);
-}
-
-function createShootingStar() {
-  const shootingStarGroup = new THREE.Group();
-  
-  // Star head
-  const headGeometry = new THREE.SphereGeometry(0.05, 8, 8);
-  const headMaterial = new THREE.MeshBasicMaterial({ 
-    color: 0xFFFFFF,
-    transparent: true,
-    opacity: 1.0
-  });
-  const head = new THREE.Mesh(headGeometry, headMaterial);
-  shootingStarGroup.add(head);
-  
-  // Trail
-  const trailGeometry = new THREE.CylinderGeometry(0.02, 0.05, 1, 8);
-  const trailMaterial = new THREE.MeshBasicMaterial({ 
-    color: 0xFFFFFF,
-    transparent: true,
-    opacity: 0.8
-  });
-  const trail = new THREE.Mesh(trailGeometry, trailMaterial);
-  trail.position.z = 0.5;
-  trail.rotation.x = Math.PI / 2;
-  shootingStarGroup.add(trail);
-  
-  // Random starting position
-  const x = (Math.random() - 0.5) * 200;
-  const y = 50 + Math.random() * 50;
-  const z = (Math.random() - 0.5) * 200;
-  shootingStarGroup.position.set(x, y, z);
-  
-  // Velocity downwards
-  const speed = 10 + Math.random() * 20;
-  shootingStarGroup.userData.velocity = new THREE.Vector3(
-    (Math.random() - 0.5) * 2,
-    -speed,
-    (Math.random() - 0.5) * 2
-  );
-  
-  shootingStarGroup.userData.life = 1.0;
-  
-  scene.add(shootingStarGroup);
-  shootingStars.push(shootingStarGroup);
-}
-
-function updateMeteors(dt) {
-  for (let i = meteors.length - 1; i >= 0; i--) {
-    const meteor = meteors[i];
-    meteor.position.add(meteor.userData.velocity.clone().multiplyScalar(dt));
-    meteor.userData.life -= dt * 0.5;
-    meteor.material.opacity = meteor.userData.life;
-    
-    if (meteor.userData.life <= 0) {
-      scene.remove(meteor);
-      meteors.splice(i, 1);
-    }
-  }
-}
-
-function updateComets(dt) {
-  for (let i = comets.length - 1; i >= 0; i--) {
-    const comet = comets[i];
-    comet.position.add(comet.userData.velocity.clone().multiplyScalar(dt));
-    
-    // Add some curve to the path
-    comet.userData.angle += dt * 0.5;
-    comet.position.y += Math.sin(comet.userData.angle) * 0.5;
-    
-    // Point the comet in the direction of movement
-    comet.lookAt(
-      comet.position.x - comet.userData.velocity.x,
-      comet.position.y - comet.userData.velocity.y,
-      comet.position.z - comet.userData.velocity.z
-    );
-    
-    comet.userData.life -= dt * 0.3;
-    comet.children[0].material.opacity = comet.userData.life;
-    comet.children[1].material.opacity = comet.userData.life * 0.7;
-    
-    if (comet.userData.life <= 0) {
-      scene.remove(comet);
-      comets.splice(i, 1);
-    }
-  }
-}
-
-function updateShootingStars(dt) {
-  for (let i = shootingStars.length - 1; i >= 0; i--) {
-    const star = shootingStars[i];
-    star.position.add(star.userData.velocity.clone().multiplyScalar(dt));
-    star.userData.life -= dt * 0.8;
-    star.children[0].material.opacity = star.userData.life;
-    star.children[1].material.opacity = star.userData.life * 0.8;
-    
-    if (star.userData.life <= 0) {
-      scene.remove(star);
-      shootingStars.splice(i, 1);
-    }
-  }
-}
-
-function createGalaxyTransition() {
-  // Create a galaxy effect for transitions
-  const galaxyGeometry = new THREE.RingGeometry(5, 50, 64);
-  const galaxyMaterial = new THREE.MeshBasicMaterial({
-    color: 0x9C27B0,
-    transparent: true,
-    opacity: 0.7,
-    side: THREE.DoubleSide
-  });
-  const galaxy = new THREE.Mesh(galaxyGeometry, galaxyMaterial);
-  galaxy.rotation.x = Math.PI / 2;
-  galaxy.position.set(0, 0, -100);
-  
-  scene.add(galaxy);
-  
-  // Animate the galaxy
-  const animateGalaxy = () => {
-    galaxy.rotation.z += 0.01;
-    galaxy.position.z += 2;
-    galaxy.material.opacity -= 0.01;
-    
-    if (galaxy.material.opacity <= 0) {
-      scene.remove(galaxy);
-    } else {
-      requestAnimationFrame(animateGalaxy);
-    }
-  };
-  
-  animateGalaxy();
-}
-
-// Randomly create cosmic events
-function randomCosmicEvent() {
-  const rand = Math.random();
-  if (rand < 0.01) {
-    createMeteor();
-  } else if (rand < 0.015) {
-    createComet();
-  } else if (rand < 0.02) {
-    createShootingStar();
-  }
-}
-
-/* ---------- Canvas texture functions ---------- */
-function makeTex(hex, isGas = false) {
-  const c = document.createElement('canvas');
-  c.width = c.height = 384;
-  const ctx = c.getContext('2d');
-  
-  const base = hexToRgbInt(hex), 
-      c0 = tintRgb(base, +0.35), 
-      c1 = base, 
-      c2 = tintRgb(base, -0.45);
-      
-  const grd = ctx.createRadialGradient(140, 140, 16, 192, 192, 200);
-  grd.addColorStop(0, rgbaStr(c0.r, c0.g, c0.b, 1));
-  grd.addColorStop(0.6, rgbaStr(c1.r, c1.g, c1.b, 1));
-  grd.addColorStop(1, rgbaStr(c2.r, c2.g, c2.b, 1));
-  
-  ctx.fillStyle = grd;
-  ctx.fillRect(0, 0, 384, 384);
-  
-  if (isGas) {
-    ctx.globalAlpha = 0.25;
-    for (let i = 0; i < 10; i++) {
-      const y = (i / 10) * 384;
-      ctx.fillStyle = (i % 2) ? 'rgba(255,255,255,.22)' : 'rgba(0,0,0,.22)';
-      ctx.fillRect(0, y, 384, 4 + Math.random() * 4);
-    }
-    ctx.globalAlpha = 1;
-  }
-  
-  const tex = new THREE.CanvasTexture(c);
-  tex.anisotropy = 4;
-  return tex;
-}
-
-function makePreview(hex, isGas = false) {
-  const c = document.createElement('canvas');
-  c.width = 640;
-  c.height = 360;
-  const ctx = c.getContext('2d');
-  
-  const base = hexToRgbInt(hex), 
-      c0 = tintRgb(base, +0.35), 
-      c1 = base, 
-      c2 = tintRgb(base, -0.45);
-      
-  const cx = 180, cy = 180, r = 120;
-  ctx.fillStyle = '#000';
-  ctx.fillRect(0, 0, 640, 360);
-  
-  const grd = ctx.createRadialGradient(cx - 30, cy - 30, 10, cx, cy, r);
-  grd.addColorStop(0, rgbaStr(c0.r, c0.g, c0.b, 1));
-  grd.addColorStop(0.6, rgbaStr(c1.r, c1.g, c1.b, 1));
-  grd.addColorStop(1, rgbaStr(c2.r, c2.g, c2.b, 1));
-  
-  ctx.fillStyle = grd;
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.fill();
-  
-  if (isGas) {
-    ctx.globalAlpha = 0.25;
-    for (let i = 0; i < 10; i++) {
-      const y = cy - r + (i / 10) * r * 2;
-      ctx.fillStyle = (i % 2) ? 'rgba(255,255,255,.22)' : 'rgba(0,0,0,.22)';
-      ctx.fillRect(cx - r, y, r * 2, 4 + Math.random() * 4);
-    }
-    ctx.globalAlpha = 1;
-  }
-  
-  ctx.fillStyle = 'rgba(255,255,255,.9)';
-  ctx.font = '700 22px system-ui, sans-serif';
-  ctx.fillText('Preview', 20, 36);
-  
-  return c.toDataURL('image/png');
-}
-
-function makeAsteroidBeltDataURL() {
-  const cw = 900, ch = 420;
-  const c = document.createElement('canvas');
-  c.width = cw;
-  c.height = ch;
-  const x = c.getContext('2d');
-  
-  x.fillStyle = "#000";
-  x.fillRect(0, 0, cw, ch);
-  
-  for (let i = 0; i < 280; i++) {
-    x.fillStyle = `rgba(255,255,255,${0.3 + Math.random() * 0.7})`;
-    x.beginPath();
-    x.arc(Math.random() * cw, Math.random() * ch, Math.random() * 1.2, 0, Math.PI * 2);
-    x.fill();
-  }
-  
-  x.translate(cw / 2, ch / 2);
-  
-  for (let i = 0; i < 1600; i++) {
-    const a = Math.random() * Math.PI * 2;
-    const r = 140 + Math.random() * 80;
-    const X = Math.cos(a) * r;
-    const Y = Math.sin(a) * r * 0.55;
-    const s = Math.random() * 1.8;
-    x.fillStyle = Math.random() < 0.5 ? "rgba(210,190,150,.9)" : "rgba(120,100,80,.9)";
-    x.beginPath();
-    x.arc(X, Y, s, 0, Math.PI * 2);
-    x.fill();
-  }
-  
-  x.setTransform(1, 0, 0, 1, 0, 0);
-  x.fillStyle = "rgba(255,255,255,.9)";
-  x.font = "700 22px system-ui, sans-serif";
-  x.fillText("Asteroid Belt", 20, 36);
-  
-  return c.toDataURL("image/png");
-}
-
-/* ---------- Planet data ---------- */
+// Planet data
 const DATA = [
   {
-    n: "Mercury", r: 0.4, d: 10, c: 0x8C7853, rot: 1.0, orb: 1.6, img: "", 
+    n: "Mercury", r: 0.4, d: 10, c: 0x8C7853, rot: 1.0, orb: 1.6, img: "",
     info: { Diameter: "4,879 km", Distance: "57.9M km", Day: "59 d", Year: "88 d", Moons: "0", Type: "Terrestrial" },
     facts: ["Wildest temperature swings", "Fastest orbit (88 days)"],
     quiz: [
@@ -795,7 +302,7 @@ const DATA = [
     ]
   },
   {
-    n: "Venus", r: 0.9, d: 15, c: 0xFFC649, rot: -0.3, orb: 1.2, img: "", 
+    n: "Venus", r: 0.9, d: 15, c: 0xFFC649, rot: -0.3, orb: 1.2, img: "",
     info: { Diameter: "12,104 km", Distance: "108.2M km", Day: "243 d", Year: "225 d", Moons: "0", Type: "Terrestrial" },
     facts: ["Runaway greenhouse (hottest)", "Retrograde; day > year"],
     quiz: [
@@ -808,7 +315,7 @@ const DATA = [
     ]
   },
   {
-    n: "Earth", r: 1.0, d: 20, c: 0x2E7FFF, rot: 1.2, orb: 1.0, img: "", 
+    n: "Earth", r: 1.0, d: 20, c: 0x2E7FFF, rot: 1.2, orb: 1.0, img: "",
     info: { Diameter: "12,742 km", Distance: "149.6M km", Day: "24 h", Year: "365.25 d", Moons: "1", Type: "Terrestrial" },
     facts: ["~71% water", "Only known life"],
     quiz: [
@@ -822,7 +329,7 @@ const DATA = [
     ]
   },
   {
-    n: "Mars", r: 0.5, d: 25, c: 0xCD5C5C, rot: 1.0, orb: 0.8, img: "", 
+    n: "Mars", r: 0.5, d: 25, c: 0xCD5C5C, rot: 1.0, orb: 0.8, img: "",
     info: { Diameter: "6,779 km", Distance: "227.9M km", Day: "24.6 h", Year: "687 d", Moons: "2", Type: "Terrestrial" },
     facts: ["Olympus Mons", "Red from iron oxide"],
     quiz: [
@@ -835,7 +342,7 @@ const DATA = [
     ]
   },
   {
-    n: "Jupiter", r: 2.5, d: 35, c: 0xD8CA9D, rot: 2.5, orb: 0.5, img: "", 
+    n: "Jupiter", r: 2.5, d: 35, c: 0xD8CA9D, rot: 2.5, orb: 0.5,
     info: { Diameter: "139,820 km", Distance: "778.5M km", Day: "9.9 h", Year: "11.9 y", Moons: "95", Type: "Gas giant" },
     facts: ["Great Red Spot is a storm", "Huge mass"],
     quiz: [
@@ -849,7 +356,7 @@ const DATA = [
     ]
   },
   {
-    n: "Saturn", r: 2.0, d: 45, c: 0xFAD5A5, rot: 2.2, orb: 0.35, img: "", 
+    n: "Saturn", r: 2.0, d: 45, c: 0xFAD5A5, rot: 2.2, orb: 0.35, img: "",
     info: { Diameter: "116,460 km", Distance: "1.4B km", Day: "10.7 h", Year: "29.5 y", Moons: "146", Type: "Gas giant" },
     facts: ["Rings: ice & rock", "Less dense than water"],
     quiz: [
@@ -862,7 +369,7 @@ const DATA = [
     ]
   },
   {
-    n: "Uranus", r: 1.5, d: 55, c: 0x4FD0E7, rot: 1.1, orb: 0.25, img: "", 
+    n: "Uranus", r: 1.5, d: 55, c: 0x4FD0E7, rot: 1.1, orb: 0.25, img: "",
     info: { Diameter: "50,724 km", Distance: "2.9B km", Day: "17.2 h", Year: "84 y", Moons: "28", Type: "Ice giant" },
     facts: ["Rotates on its side", "Record cold temps"],
     quiz: [
@@ -875,7 +382,7 @@ const DATA = [
     ]
   },
   {
-    n: "Neptune", r: 1.4, d: 65, c: 0x4169E1, rot: 1.0, orb: 0.18, img: "", 
+    n: "Neptune", r: 1.4, d: 65, c: 0x4169E1, rot: 1.0, orb: 0.18, img: "",
     info: { Diameter: "49,244 km", Distance: "4.5B km", Day: "16.1 h", Year: "165 y", Moons: "16", Type: "Ice giant" },
     facts: ["Fastest winds >2000 km/h", "Discovered via math"],
     quiz: [
@@ -888,257 +395,7 @@ const DATA = [
     ]
   }
 ];
-
-/* ---------- Scene building functions ---------- */
-function createSun() {
-  sun = new THREE.Mesh(
-    new THREE.SphereGeometry(5, 48, 48),
-    new THREE.MeshBasicMaterial({ color: 0xFFD24D })
-  );
-  
-  sun.userData = {
-    n: "Sun",
-    isPlanet: false,
-    img: "",
-    info: { Type: "G-type main-sequence", Diameter: "1.39M km" },
-    facts: ["~99.86% of Solar System mass", "Light to Earth ~8m20s"],
-    quiz: [
-      ["Energy source", "Fusion", "Fission", "Combustion", "Fusion"],
-      ["Avg surface temp", "550°C", "5,500°C", "55,000°C", "5,500°C"],
-      ["Light to Earth", "8m20s", "1s", "1h", "8m20s"],
-      ["Spectral class", "M", "G2V", "A", "G2V"],
-      ["Mass share of SS", "9.86%", "99.86%", "86%", "99.86%"],
-      ["Core temp ~", "1.5M°C", "15M°C", "150k°C", "15M°C"]
-    ]
-  };
-  
-  scene.add(sun);
-  makeLabel("Sun", sun, sun.userData);
-}
-
-function createPlanets() {
-  const seg = (innerWidth < 768) ? 28 : 64;
-  
-  DATA.forEach(d => {
-    const gas = ["Jupiter", "Saturn", "Uranus", "Neptune"].includes(d.n);
-    const m = new THREE.Mesh(
-      new THREE.SphereGeometry(d.r, seg, seg),
-      new THREE.MeshStandardMaterial({
-        map: makeTex(d.c, gas),
-        roughness: (gas ? 0.7 : 0.9),
-        metalness: (gas ? 0.2 : 0.1)
-      })
-    );
-    
-    m.position.x = d.d;
-    m.userData = {
-      ...d,
-      angle: Math.random() * Math.PI * 2,
-      isPlanet: true,
-      moons: []
-    };
-    
-    scene.add(m);
-    planets.push(m);
-    makeLabel(d.n, m, m.userData);
-    
-    if (d.n === "Saturn") {
-      const ring = new THREE.Mesh(
-        new THREE.RingGeometry(d.r * 1.4, d.r * 2.2, 64),
-        new THREE.MeshBasicMaterial({
-          color: 0xFAD5A5,
-          transparent: true,
-          opacity: 0.85,
-          side: THREE.DoubleSide
-        })
-      );
-      ring.rotation.x = Math.PI / 2;
-      m.add(ring);
-    }
-    
-    // orbit ring
-    const orbit = new THREE.Mesh(
-      new THREE.RingGeometry(d.d - 0.02, d.d + 0.02, 128),
-      new THREE.MeshBasicMaterial({
-        color: 0x88ffff,
-        transparent: true,
-        opacity: 0.18,
-        side: THREE.DoubleSide
-      })
-    );
-    orbit.rotation.x = Math.PI / 2;
-    orbit.visible = false;
-    scene.add(orbit);
-    orbitRings.push(orbit);
-    
-    // tiny moons for Earth & Jupiter (lightweight)
-    if (d.n === "Earth") {
-      addMoon(m, 0.18, 1.8, 1.2);
-    }
-    if (d.n === "Jupiter") {
-      addMoon(m, 0.22, 3.4, 0.9);
-      addMoon(m, 0.2, 4.1, 0.7);
-    }
-  });
-}
-
-function addMoon(parent, radius, dist, speed) {
-  const geo = new THREE.SphereGeometry(radius, 18, 18);
-  const mat = new THREE.MeshStandardMaterial({
-    map: makeTex(0xBBBBBB, false),
-    roughness: 0.9,
-    metalness: 0.05
-  });
-  const moon = new THREE.Mesh(geo, mat);
-  
-  moon.userData = {
-    angle: Math.random() * Math.PI * 2,
-    dist,
-    speed
-  };
-  
-  moon.position.set(dist, 0, 0);
-  parent.add(moon);
-  parent.userData.moons.push(moon);
-}
-
-function updateMoons() {
-  planets.forEach(p => {
-    (p.userData.moons || []).forEach(m => {
-      m.userData.angle += 0.01 * m.userData.speed;
-      m.position.x = Math.cos(m.userData.angle) * m.userData.dist;
-      m.position.z = Math.sin(m.userData.angle) * m.userData.dist;
-    });
-  });
-}
-
-function createAsteroidBelt() {
-  const g = new THREE.BufferGeometry();
-  const pos = [];
-  const count = (innerWidth < 768) ? 700 : 1000;
-  
-  for (let i = 0; i < count; i++) {
-    const R = 30 + Math.random() * 4;
-    const a = Math.random() * Math.PI * 2;
-    const y = (Math.random() - 0.5) * 1;
-    pos.push(Math.cos(a) * R, y, Math.sin(a) * R);
-  }
-  
-  g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3));
-  const mat = new THREE.PointsMaterial({ color: 0x8B7355, size: 0.13 });
-  scene.add(new THREE.Points(g, mat));
-  
-  const anchor = new THREE.Object3D();
-  anchor.position.set(32, 0, 0);
-  scene.add(anchor);
-  
-  const belt = {
-    n: "Asteroid Belt",
-    isPlanet: false,
-    img: makeAsteroidBeltDataURL(),
-    info: {
-      Location: "Between Mars & Jupiter",
-      Width: "~1 AU",
-      Largest: "Ceres (dwarf planet)"
-    },
-    facts: [
-      "Mostly empty space; large separations",
-      "Spacecraft traverse it routinely",
-      "Ceres ≈ one-third of belt mass"
-    ],
-    quiz: [
-      ["Where is it?", "Between Mars & Jupiter", "Beyond Neptune", "Between Earth & Mars", "Between Mars & Jupiter"],
-      ["Crowded & dangerous?", "True", "False", "False", "False"],
-      ["Largest body", "Vesta", "Ceres", "Pallas", "Ceres"],
-      ["Typical gaps?", "Meters", "Kilometers", ">100,000 km", ">100,000 km"],
-      ["Type", "Planet", "Field", "Ring", "Field"],
-      ["Contains dwarf planet?", "Yes (Ceres)", "No", "Unknown", "Yes (Ceres)"]
-    ]
-  };
-  
-  makeLabel("Asteroid Belt", anchor, belt);
-}
-
-/* ---------- Label functions ---------- */
-function makeLabel(txt, obj, data) {
-  const el = document.createElement('div');
-  el.className = 'label';
-  el.textContent = txt;
-  document.body.appendChild(el);
-  
-  el.addEventListener('click', e => {
-    e.stopPropagation();
-    openPlanet(data);
-  });
-  
-  labelsArr.push({
-    el,
-    obj,
-    data,
-    sx: 0,
-    sy: 0,
-    visible: false
-  });
-}
-
-function updateLabels() {
-  const max = (innerWidth < 768) ? 5 : 12;
-  const boxes = [];
-  let shown = 0;
-  
-  labelsArr.forEach(L => {
-    if (!showLabels) {
-      L.el.classList.remove('on');
-      L.visible = false;
-      return;
-    }
-    
-    const v = new THREE.Vector3();
-    L.obj.getWorldPosition(v);
-    v.project(camera);
-    
-    let x = (v.x * 0.5 + 0.5) * innerWidth,
-        y = (-v.y * 0.5 + 0.5) * innerHeight;
-        
-    if (!L.visible) {
-      L.sx = x;
-      L.sy = y;
-      L.visible = true;
-    } else {
-      L.sx += (x - L.sx) * 0.25;
-      L.sy += (y - L.sy) * 0.25;
-      x = L.sx;
-      y = L.sy;
-    }
-    
-    if (x < 0 || x > innerWidth || y < 0 || y > innerHeight) {
-      L.el.classList.remove('on');
-      return;
-    }
-    
-    const rect = { x: x - 40, y: y - 12, w: 80, h: 24 };
-    let hit = false;
-    
-    for (const b of boxes) {
-      if (!(rect.x > b.x + b.w || rect.x + rect.w < b.x || rect.y > b.y + b.h || rect.y + rect.h < b.y)) {
-        hit = true;
-        break;
-      }
-    }
-    
-    if (!hit && shown < max) {
-      boxes.push(rect);
-      shown++;
-      L.el.style.left = x + 'px';
-      L.el.style.top = y + 'px';
-      L.el.classList.add('on');
-    } else {
-      L.el.classList.remove('on');
-    }
-  });
-}
-
-/* ---------- Planet modal and quiz functions ---------- */
+// Modal elements
 const pmModal = document.getElementById('planetModal');
 const pmImg = document.getElementById('pmImg');
 const pmImgErr = document.getElementById('pmImgErr');
@@ -1156,213 +413,7 @@ const qNext = document.getElementById('qNext');
 const qClose = document.getElementById('qClose');
 const qClose2 = document.getElementById('qClose2');
 const pmClose = document.getElementById('pmClose');
-
-function isValidImageURL(u) {
-  return typeof u === 'string' && (u.startsWith('data:') || /^https?:\/\//i.test(u));
-}
-
-function openPlanet(data) {
-  currentPlanet = data;
-  pmTitle.textContent = data.n || data.name || 'Object';
-  
-  // Create galaxy transition
-  createGalaxyTransition();
-  
-  // images omitted to keep lightweight; use preview canvases
-  const gas = ["Jupiter", "Saturn", "Uranus", "Neptune"].includes(data.n);
-  pmImgErr.style.display = 'none';
-  pmImg.style.display = 'block';
-  pmImg.src = makePreview(data.c || 0x888888, gas);
-  
-  pmGrid.innerHTML = '';
-  Object.entries(data.info || {}).forEach(([k, v]) => {
-    pmGrid.innerHTML += `<div class="gi"><div style="opacity:.75;font-size:12px">${k}</div><div style="font-weight:700">${v}</div></div>`;
-  });
-  
-  pmFacts.innerHTML = '';
-  (data.facts || data.funFacts || []).forEach(f => {
-    pmFacts.innerHTML += `<div class="fact"><i class="fa-solid fa-star" style="opacity:.8"></i><div>${(typeof f === 'string') ? f : f.text}</div></div>`;
-  });
-  
-  const raw = (data.quiz || []);
-  quizData = raw.map(q => Array.isArray(q) ? ({ q: q[0], a: q.slice(1, 4), ok: q[4] }) : ({ q: q.question, a: q.options, ok: q.answer }));
-  qIdx = 0;
-  currentStreak = 0;
-  qTitle.textContent = `${data.n || data.name || ''} Quiz`;
-  
-  pmModal.classList.add('on');
-  backdrop.classList.add('on');
-  
-  if (data.isPlanet) {
-    const name = data.n || data.name;
-    if (name && !visited.has(name)) {
-      visited.add(name);
-      localStorage.setItem('ce_visit_v1', JSON.stringify([...visited]));
-      updateVisitedUI();
-      award('first-visit', 10, "First Steps", "Visited your first planet");
-      if (window.fireConfetti) window.fireConfetti();
-    }
-  }
-}
-
-function closePlanet() {
-  pmModal.classList.remove('on');
-  if (!quizModal.classList.contains('on')) {
-    backdrop.classList.remove('on');
-  }
-}
-
-function startQuiz() {
-  if (!quizData.length) {
-    alert('No quiz for this object yet!');
-    return;
-  }
-  
-  quizModal.classList.add('on');
-  renderQuestion();
-}
-
-pmQuizBtn.onclick = startQuiz;
-
-function renderQuestion() {
-  if (qIdx >= quizData.length) {
-    finishQuiz();
-    return;
-  }
-  
-  const it = quizData[qIdx];
-  qQuestion.textContent = it.q;
-  qOpts.innerHTML = '';
-  qFeedback.textContent = '';
-  qNext.style.display = 'none';
-  
-  it.a.forEach(opt => {
-    const b = document.createElement('button');
-    b.textContent = opt;
-    b.onclick = () => answer(b, opt, it.ok);
-    qOpts.appendChild(b);
-  });
-}
-
-function answer(btn, sel, ok) {
-  [...qOpts.querySelectorAll('button')].forEach(b => b.disabled = true);
-  
-  if (sel === ok) {
-    btn.classList.add('correct');
-    qFeedback.textContent = 'Correct!';
-    qFeedback.style.color = 'var(--ok)';
-    currentStreak++;
-    addPoints(10);
-    if (currentStreak === 3) {
-      award('streak3', 15, 'On a Roll!', '3 correct in a row');
-    }
-  } else {
-    btn.classList.add('incorrect');
-    [...qOpts.querySelectorAll('button')].forEach(b => {
-      if (b.textContent === ok) {
-        b.classList.add('correct');
-      }
-    });
-    qFeedback.textContent = 'Correct: ' + ok;
-    qFeedback.style.color = 'var(--bad)';
-    currentStreak = 0;
-    addPoints(2);
-  }
-  
-  qIdx++;
-  qNext.style.display = 'inline-block';
-}
-
-function nextQuestion() {
-  renderQuestion();
-}
-
-function finishQuiz() {
-  closeQuiz();
-  toast("Quiz complete! +20 pts");
-  addPoints(20);
-  award('quiz-complete', 20, 'Quiz Whiz', 'Completed a planet quiz');
-  if (window.fireConfetti) {
-    window.fireConfetti();
-  }
-}
-
-function closeQuiz() {
-  quizModal.classList.remove('on');
-  if (!pmModal.classList.contains('on')) {
-    backdrop.classList.remove('on');
-  }
-}
-
-qNext.onclick = nextQuestion;
-qClose.onclick = closeQuiz;
-qClose2.onclick = closeQuiz;
-
-/* ---------- Points and achievements functions ---------- */
-function addPoints(n) {
-  points += n;
-  pointsText.textContent = `${points} pts`;
-  updateLevel();
-  localStorage.setItem('ce_points_v1', points);
-}
-
-function award(key, bonus, title, desc) {
-  if (achievements.has(key)) {
-    return;
-  }
-  
-  achievements.add(key);
-  localStorage.setItem('ce_achs_v1', JSON.stringify([...achievements]));
-  addBadge(key, title);
-  addPoints(bonus);
-  toast(`${title} (+${bonus} pts)`);
-}
-
-const badgesEl = document.getElementById('badges');
-
-function addBadge(key, title) {
-  const div = document.createElement('div');
-  div.className = 'badge';
-  div.dataset.key = key;
-  div.innerHTML = `<i class="fa-solid fa-trophy"></i><span>${title}</span>`;
-  badgesEl.appendChild(div);
-}
-
-function rebuildBadges() {
-  badgesEl.innerHTML = '';
-  
-  for (const key of achievements) {
-    const title = ({
-      'first-visit': 'First Steps',
-      'streak3': 'On a Roll!',
-      'quiz-complete': 'Quiz Whiz',
-      'all-planets': 'Grand Tour',
-      'inner-worlds': 'Inner Worlds',
-      'gas-giants': 'Gas Giant Guru'
-    })[key] || key;
-    
-    addBadge(key, title);
-  }
-}
-
-function postVisitChecks() {
-  const inner = ["Mercury", "Venus", "Earth", "Mars"].every(p => visited.has(p));
-  if (inner) {
-    award('inner-worlds', 15, 'Inner Worlds', 'Visited all terrestrial planets');
-  }
-  
-  const all = ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"].every(p => visited.has(p));
-  if (all) {
-    award('all-planets', 30, 'Grand Tour', 'Visited all 8 planets');
-  }
-  
-  const gas = ["Jupiter", "Saturn", "Uranus", "Neptune"].every(p => visited.has(p));
-  if (gas) {
-    award('gas-giants', 15, 'Gas Giant Guru', 'Visited all gas/ice giants');
-  }
-}
-
-/* ---------- Coach functions ---------- */
+// Coach elements
 const coach = {
   root: document.getElementById('coach'),
   spot: document.getElementById('spot'),
@@ -1375,484 +426,427 @@ const coach = {
   dots: document.getElementById('dots'),
   never: document.getElementById('cNever')
 };
-
 let steps = [], cIdx = 0, coachOn = false;
-
-function buildSteps() {
-  steps = [
-    {
-      sel: '#canvas',
-      title: 'Explore',
-      text: 'Drag to orbit; pinch/scroll to zoom; two-finger drag to tilt.',
-      place: 'center'
-    },
-    {
-      sel: '#btnLabels',
-      title: 'Labels',
-      text: 'Toggle labels. Tap a label to open info.',
-      place: 'top'
-    },
-    {
-      sel: '#btnOrbits',
-      title: 'Orbits',
-      text: 'Show each planet\'s path around the Sun.',
-      place: 'top'
-    }
-  ];
-}
-
-function startCoach(force = false) {
-  if (!force && localStorage.getItem('ce_coach_done') === 'yes') {
-    return;
-  }
-  
-  coachOn = true;
-  cIdx = 0;
-  buildSteps();
-  coach.root.classList.add('on');
-  layoutCoach();
-}
-
-function endCoach() {
-  coachOn = false;
-  coach.root.classList.remove('on');
-  if (coach.never.checked) {
-    localStorage.setItem('ce_coach_done', 'yes');
-  }
-}
-
-coach.next.onclick = () => {
-  cIdx++;
-  if (cIdx >= steps.length) {
-    endCoach();
-  } else {
-    layoutCoach();
-  }
-};
-
-coach.back.onclick = () => {
-  cIdx = Math.max(0, cIdx - 1);
-  layoutCoach();
-};
-
-coach.skip.onclick = () => endCoach();
-
-window.addEventListener('resize', () => {
-  if (coachOn) {
-    layoutCoach();
-  }
-});
-
-function layoutCoach() {
-  const s = steps[cIdx];
-  coach.title.textContent = s.title;
-  coach.text.textContent = s.text;
-  
-  coach.dots.innerHTML = '';
-  for (let i = 0; i < steps.length; i++) {
-    const d = document.createElement('div');
-    d.className = 'dot' + (i === cIdx ? ' on' : '');
-    coach.dots.appendChild(d);
-  }
-  
-  const t = document.querySelector(s.sel);
-  const r = t ? t.getBoundingClientRect() : {
-    left: 10,
-    top: 10,
-    width: innerWidth - 20,
-    height: 80
-  };
-  
-  const pad = 8,
-        x = r.left - pad,
-        y = r.top - pad,
-        w = r.width + pad * 2,
-        h = r.height + pad * 2;
-        
-  Object.assign(coach.spot.style, {
-    left: x + 'px',
-    top: y + 'px',
-    width: w + 'px',
-    height: h + 'px'
-  });
-  
-  const tipW = Math.min(innerWidth * 0.92, 360);
-  let tx = x + w / 2 - tipW / 2,
-      ty;
-      
-  if (s.place === 'top') {
-    ty = y - 12 - 140;
-  } else if (s.place === 'center') {
-    tx = (innerWidth - tipW) / 2;
-    ty = Math.max(16, y + h + 12);
-  } else {
-    ty = y + h + 12;
-  }
-  
-  tx = Math.max(12, Math.min(tx, innerWidth - tipW - 12));
-  ty = Math.max(12, Math.min(ty, innerHeight - 160));
-  
-  Object.assign(coach.tip.style, {
-    left: tx + 'px',
-    top: ty + 'px',
-    width: tipW + 'px'
-  });
-}
-
-setTimeout(() => startCoach(false), 1200);
-
-/* ---------- Confetti ---------- */
-(function() {
-  const c = document.getElementById('confetti');
-  const x = c.getContext('2d');
-  
-  function resize() {
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    c.width = innerWidth * dpr;
-    c.height = innerHeight * dpr;
-    c.style.width = innerWidth + 'px';
-    c.style.height = innerHeight + 'px';
-    x.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-  
-  resize();
-  window.addEventListener('resize', resize);
-  
-  let parts = [],
-      run = false;
-      
-  function burst() {
-    const cnt = innerWidth < 600 ? 100 : 200;
-    const pal = ['#00F5FF', '#FF00FF', '#FFFF00', '#FFFFFF', '#FFD166'];
-    const sy = innerHeight * 0.25;
-    
-    function add(px) {
-      for (let i = 0; i < cnt / 2; i++) {
-        const ang = -Math.PI / 2 + (Math.random() - 0.5) * (Math.PI / 1.2);
-        const sp = 6 + Math.random() * 5;
-        parts.push({
-          x: px,
-          y: sy,
-          vx: Math.cos(ang) * sp,
-          vy: Math.sin(ang) * sp,
-          w: 6 + Math.random() * 6,
-          h: 10 + Math.random() * 10,
-          r: Math.random() * Math.PI,
-          dr: (Math.random() - 0.5) * 0.4,
-          alpha: 0.9 - Math.random() * 0.2,
-          life: 120 + Math.random() * 40,
-          color: pal[Math | Math.random() * pal.length]
-        });
-      }
-    }
-    
-    add(innerWidth * 0.3);
-    add(innerWidth * 0.7);
-    
-    if (!run) {
-      run = true;
-      loop();
-    }
-  }
-  
-  function loop() {
-    x.clearRect(0, 0, c.width, c.height);
-    
-    for (let i = parts.length - 1; i >= 0; i--) {
-      const p = parts[i];
-      p.vy += 0.18;
-      p.vx += 0.004 * Math.sin(p.r);
-      p.x += p.vx;
-      p.y += p.vy;
-      p.r += p.dr;
-      p.alpha *= 0.993;
-      p.life--;
-      
-      x.save();
-      x.globalAlpha = Math.max(0, p.alpha);
-      x.translate(p.x, p.y);
-      x.rotate(p.r);
-      x.fillStyle = p.color;
-      x.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      x.restore();
-      
-      if (p.life <= 0 || p.y > innerHeight * 2) {
-        parts.splice(i, 1);
-      }
-    }
-    
-    if (parts.length) {
-      requestAnimationFrame(loop);
-    } else {
-      run = false;
-      x.clearRect(0, 0, c.width, c.height);
-    }
-  }
-  
-  window.fireConfetti = burst;
-})();
-
-/* ---------- UI bindings and picking ---------- */
+// UI elements
 const btnLabels = document.getElementById('btnLabels');
 const btnMotion = document.getElementById('btnMotion');
 const btnOrbits = document.getElementById('btnOrbits');
 const btnHelp = document.getElementById('btnHelp');
 const btnAchievements = document.getElementById('btnAchievements');
 const achDrawer = document.getElementById('achDrawer');
+const badgesEl = document.getElementById('badges');
+// Utility functions
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+function hexToRgbInt(hex) { const n = (Number(hex)>>>0); return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 }; }
+function tintRgb(rgb, amt) { return { r:clamp(rgb.r+255*amt,0,255), g:clamp(rgb.g+255*amt,0,255), b:clamp(rgb.b+255*amt,0,255) }; }
+function rgbaStr(r,g,b,a) { return `rgba(${r|0},${g|0},${b|0},${a})`; }
 
+// Loader & errors
+const loader = document.getElementById('loader');
+const lprog = document.getElementById('lprog');
+const lstatus = document.getElementById('lstatus');
+function setStatus(s) { lstatus.textContent = s; }
+function hideLoader() { loader.classList.add('hide'); }
+
+(function() {
+  let w = 0;
+  const id = setInterval(() => { w += 3; lprog.style.width = w + '%'; if (w >= 100) clearInterval(id); }, 20);
+})();
+window.addEventListener('error', e => {
+  hideLoader();
+  document.getElementById('errmsg').textContent = 'Error: ' + (e.message || 'Unknown') + ". Try reloading. If the problem persists, resetting your progress may help.";
+  document.getElementById('err').classList.add('show');
+});
+window.addEventListener('unhandledrejection', e => {
+  hideLoader();
+  document.getElementById('errmsg').textContent = 'Startup issue: ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason)) + ". Try reloading.";
+  document.getElementById('err').classList.add('show');
+});
+
+// Level and progress functions
+function updateLevel() {
+  const currentRank = ranks.find(rank => points >= rank.minPoints && points <= rank.maxPoints);
+  if (currentRank) { levelText.textContent = currentRank.name; }
+  const progress = (points / 1000) * 100;
+  progressBar.style.width = `${Math.min(progress, 100)}%`;
+}
+
+function showCharacterGuide() {
+  const character = characters[currentCharacter];
+  const message = character.messages[currentMessageIndex];
+  characterAvatar.textContent = character.avatar;
+  characterName.textContent = character.name;
+  characterMessage.textContent = message.text;
+  characterHint.textContent = message.hint;
+  characterGuide.classList.add('on');
+  currentMessageIndex = (currentMessageIndex + 1) % character.messages.length;
+  if (currentMessageIndex === 0) { currentCharacter = (currentCharacter + 1) % characters.length; }
+  setTimeout(() => { characterGuide.classList.remove('on'); }, 5000);
+}
+
+// Starfield functions
+function createStarLayer(count, size, twinkleSpeed, drift) {
+  const g = new THREE.BufferGeometry();
+  const pos = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    let x = (Math.random() - 0.5) * 2400, y = (Math.random() - 0.5) * 1800, z = (Math.random() - 0.5) * 2400;
+    if (x * x + y * y + z * z < 120 * 120) { i--; continue; }
+    pos[i * 3] = x; pos[i * 3 + 1] = y; pos[i * 3 + 2] = z;
+  }
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const m = new THREE.PointsMaterial({ color: 0xFFFFFF, size, transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending, sizeAttenuation: true });
+  const p = new THREE.Points(g, m);
+  p.userData = { twinkle: (Math.random() * Math.PI * 2), speed: twinkleSpeed, drift };
+  scene.add(p);
+  starLayers.push(p);
+}
+
+function updateStars(dt) {
+  for (const p of starLayers) {
+    p.userData.twinkle += dt * p.userData.speed;
+    const base = 0.6 + 0.4 * Math.sin(p.userData.twinkle);
+    p.material.opacity = base;
+    p.rotation.y += p.userData.drift * dt * 0.05;
+  }
+}
+
+// Meteor, comet, and shooting star functions
+function createMeteor() {
+  const meteor = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), new THREE.MeshBasicMaterial({ color: 0xFF5722, transparent: true, opacity: 0.8 }));
+  const angle = Math.random() * Math.PI * 2;
+  const distance = 100 + Math.random() * 50;
+  meteor.position.set( Math.cos(angle) * distance, (Math.random() - 0.5) * 50, Math.sin(angle) * distance );
+  const speed = 5 + Math.random() * 10;
+  meteor.userData.velocity = new THREE.Vector3( -Math.cos(angle) * speed, (Math.random() - 0.5) * 2, -Math.sin(angle) * speed );
+  meteor.userData.life = 1.0;
+  scene.add(meteor);
+  meteors.push(meteor);
+}
+function createComet() {
+  const cometGroup = new THREE.Group();
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 16), new THREE.MeshBasicMaterial({ color: 0x4FC3F7, transparent: true, opacity: 0.9 }));
+  cometGroup.add(head);
+  const tail = new THREE.Mesh(new THREE.ConeGeometry(0.5, 3, 8), new THREE.MeshBasicMaterial({ color: 0x81D4FA, transparent: true, opacity: 0.7 }));
+  tail.position.z = 1.5; tail.rotation.x = Math.PI / 2;
+  cometGroup.add(tail);
+  const angle = Math.random() * Math.PI * 2;
+  const distance = 150;
+  cometGroup.position.set( Math.cos(angle) * distance, (Math.random() - 0.5) * 40, Math.sin(angle) * distance );
+  const speed = 2 + Math.random() * 3;
+  cometGroup.userData.velocity = new THREE.Vector3( -Math.cos(angle) * speed, (Math.random() - 0.5) * 0.5, -Math.sin(angle) * speed );
+  cometGroup.userData.angle = angle; cometGroup.userData.speed = speed; cometGroup.userData.life = 1.0;
+  scene.add(cometGroup);
+  comets.push(cometGroup);
+}
+function createShootingStar() {
+  const shootingStarGroup = new THREE.Group();
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), new THREE.MeshBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 1.0 }));
+  shootingStarGroup.add(head);
+  const trail = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.05, 1, 8), new THREE.MeshBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 0.8 }));
+  trail.position.z = 0.5; trail.rotation.x = Math.PI / 2;
+  shootingStarGroup.add(trail);
+  const x = (Math.random() - 0.5) * 200, y = 50 + Math.random() * 50, z = (Math.random() - 0.5) * 200;
+  shootingStarGroup.position.set(x, y, z);
+  const speed = 10 + Math.random() * 20;
+  shootingStarGroup.userData.velocity = new THREE.Vector3( (Math.random() - 0.5) * 2, -speed, (Math.random() - 0.5) * 2 );
+  shootingStarGroup.userData.life = 1.0;
+  scene.add(shootingStarGroup);
+  shootingStars.push(shootingStarGroup);
+}
+function updateMeteors(dt) {
+  for (let i = meteors.length - 1; i >= 0; i--) {
+    const meteor = meteors[i];
+    meteor.position.add(meteor.userData.velocity.clone().multiplyScalar(dt));
+    meteor.userData.life -= dt * 0.5;
+    meteor.material.opacity = meteor.userData.life;
+    if (meteor.userData.life <= 0) { scene.remove(meteor); meteors.splice(i, 1); }
+  }
+}
+function updateComets(dt) {
+  for (let i = comets.length - 1; i >= 0; i--) {
+    const comet = comets[i];
+    comet.position.add(comet.userData.velocity.clone().multiplyScalar(dt));
+    comet.userData.angle += dt * 0.5;
+    comet.position.y += Math.sin(comet.userData.angle) * 0.5;
+    comet.lookAt( comet.position.x-comet.userData.velocity.x, comet.position.y-comet.userData.velocity.y, comet.position.z-comet.userData.velocity.z );
+    comet.userData.life -= dt * 0.3;
+    comet.children[0].material.opacity = comet.userData.life;
+    comet.children[1].material.opacity = comet.userData.life * 0.7;
+    if (comet.userData.life <= 0) { scene.remove(comet); comets.splice(i, 1); }
+  }
+}
+function updateShootingStars(dt) {
+  for (let i = shootingStars.length - 1; i >= 0; i--) {
+    const star = shootingStars[i];
+    star.position.add(star.userData.velocity.clone().multiplyScalar(dt));
+    star.userData.life -= dt * 0.8;
+    star.children[0].material.opacity = star.userData.life;
+    star.children[1].material.opacity = star.userData.life * 0.8;
+    if (star.userData.life <= 0) { scene.remove(star); shootingStars.splice(i, 1); }
+  }
+}
+function randomCosmicEvent() {
+  const rand = Math.random();
+  if (rand < 0.01) { createMeteor(); } else if (rand < 0.015) { createComet(); } else if (rand < 0.02) { createShootingStar(); }
+}
+
+// Canvas texture generation
+function _createPlanetGradient(ctx, hex, x1, y1, r1, x2, y2, r2) {
+    const base = hexToRgbInt(hex), c0 = tintRgb(base,+.35), c1 = base, c2 = tintRgb(base,-.45);
+    const grd = ctx.createRadialGradient(x1,y1,r1,x2,y2,r2);
+    grd.addColorStop(0, rgbaStr(c0.r,c0.g,c0.b,1));
+    grd.addColorStop(0.6, rgbaStr(c1.r,c1.g,c1.b,1));
+    grd.addColorStop(1, rgbaStr(c2.r,c2.g,c2.b,1));
+    return grd;
+}
+function makeTex(hex, isGas=false) {
+  const c = document.createElement('canvas'); c.width=c.height=384; const ctx = c.getContext('2d');
+  ctx.fillStyle = _createPlanetGradient(ctx,hex,140,140,16,192,192,200); ctx.fillRect(0,0,384,384);
+  if(isGas){ ctx.globalAlpha=0.25; for(let i=0;i<10;i++){ const y=(i/10)*384; ctx.fillStyle=(i%2)?'rgba(255,255,255,.22)':'rgba(0,0,0,.22)'; ctx.fillRect(0,y,384,4+Math.random()*4);} ctx.globalAlpha=1;}
+  const tex = new THREE.CanvasTexture(c); tex.anisotropy=4; return tex;
+}
+function makePreview(hex, isGas=false) {
+  const c = document.createElement('canvas'); c.width=640; c.height=360; const ctx=c.getContext('2d');
+  const cx=180, cy=180, r=120; ctx.fillStyle='#000'; ctx.fillRect(0,0,640,360);
+  ctx.fillStyle=_createPlanetGradient(ctx,hex,cx-30,cy-30,10,cx,cy,r); ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  if(isGas){ ctx.globalAlpha=0.25; for(let i=0;i<10;i++){ const y=cy-r+((i/10)*r*2); ctx.fillStyle=(i%2)?'rgba(255,255,255,.22)':'rgba(0,0,0,.22)'; ctx.fillRect(cx-r,y,r*2,4+Math.random()*4);} ctx.globalAlpha=1;}
+  ctx.fillStyle='rgba(255,255,255,.9)'; ctx.font='700 22px system-ui,sans-serif'; ctx.fillText('Preview',20,36);
+  return c.toDataURL('image/png');
+}
+
+// Scene building
+function createSun() {
+  sun = new THREE.Mesh( new THREE.SphereGeometry(5, 48, 48), new THREE.MeshBasicMaterial({ color: 0xFFD24D }));
+  sun.userData = { n: "Sun", isPlanet: false, info: { Type: "G-type main-sequence", Diameter: "1.39M km" }, facts: ["~99.86% of Solar System mass", "Light to Earth ~8m20s"],
+    quiz: [ ["Energy source", "Fusion", "Fission", "Combustion", "Fusion"], ["Avg surface temp", "550°C", "5,500°C", "55,000°C", "5,500°C"], ["Light to Earth", "8m20s", "1s", "1h", "8m20s"] ] };
+  scene.add(sun); makeLabel("Sun", sun, sun.userData);
+}
+function createPlanets() {
+  const seg = (innerWidth<768)?28:64;
+  DATA.forEach(d=>{
+    const gas = ["Jupiter", "Saturn", "Uranus", "Neptune"].includes(d.n);
+    const m = new THREE.Mesh( new THREE.SphereGeometry(d.r,seg,seg), new THREE.MeshStandardMaterial({map:makeTex(d.c,gas),roughness:(gas?0.7:0.9),metalness:(gas?0.2:0.1)}) );
+    m.position.x = d.d; m.userData = {...d, angle:Math.random()*Math.PI*2, isPlanet:true, moons:[]};
+    scene.add(m); planets.push(m); makeLabel(d.n, m, m.userData);
+    if(d.n==="Saturn"){ const ring=new THREE.Mesh(new THREE.RingGeometry(d.r*1.4,d.r*2.2,64),new THREE.MeshBasicMaterial({color:0xFAD5A5,transparent:true,opacity:0.85,side:THREE.DoubleSide})); ring.rotation.x=Math.PI/2; m.add(ring);}
+    const orbit=new THREE.Mesh(new THREE.RingGeometry(d.d-0.02,d.d+0.02,128),new THREE.MeshBasicMaterial({color:0x88ffff,transparent:true,opacity:0.18,side:THREE.DoubleSide}));
+    orbit.rotation.x=Math.PI/2; orbit.visible=false; scene.add(orbit); orbitRings.push(orbit);
+  });
+}
+function makeLabel(txt, obj, data) {
+  const el = document.createElement('div'); el.className='label'; el.textContent=txt; document.body.appendChild(el);
+  el.addEventListener('click', e => { e.stopPropagation(); openPlanet(data); });
+  labelsArr.push({ el, obj, data, sx:0, sy:0, visible:false });
+}
+function updateLabels() {
+  const max = (innerWidth < 768) ? 5 : 12; const boxes = []; let shown = 0;
+  labelsArr.forEach(L => {
+    if (!showLabels) { L.el.classList.remove('on'); L.visible = false; return; }
+    const v = new THREE.Vector3(); L.obj.getWorldPosition(v); v.project(camera);
+    let x = (v.x*0.5+0.5)*innerWidth, y = (-v.y*0.5+0.5)*innerHeight;
+    if (!L.visible) { L.sx=x; L.sy=y; L.visible=true; } else { L.sx+=(x-L.sx)*0.25; L.sy+=(y-L.sy)*0.25; x=L.sx; y=L.sy; }
+    if (x<0||x>innerWidth||y<0||y>innerHeight){ L.el.classList.remove('on'); return; }
+    const rect = {x:x-40,y:y-12,w:80,h:24}; let hit = false;
+    for(const b of boxes){ if(!(rect.x>b.x+b.w||rect.x+rect.w<b.x||rect.y>b.y+b.h||rect.y+rect.h<b.y)){hit=true;break;}}
+    if(!hit&&shown<max){ boxes.push(rect); shown++; L.el.style.left=x+'px'; L.el.style.top=y+'px'; L.el.classList.add('on'); } else { L.el.classList.remove('on'); }
+  });
+}
+
+// Modal handling
+function toggleSceneInteraction(enable){ if(controls){controls.enabled=enable;} document.getElementById('canvas').style.pointerEvents=enable?'auto':'none'; }
+function toggleBodyScroll(enable){ document.body.classList.toggle('modal-open', !enable); }
+function openPlanet(data) {
+  currentPlanet = data; pmTitle.textContent = data.n||data.name||'Object';
+  toggleSceneInteraction(false); toggleBodyScroll(false);
+  const gas = ["Jupiter", "Saturn", "Uranus", "Neptune"].includes(data.n);
+  pmImg.style.display='block'; pmImgErr.style.display='none'; pmImg.src = makePreview(data.c || 0x888888, gas);
+  pmGrid.innerHTML = Object.entries(data.info||{}).map(([k,v])=>`<div class="gi"><div style="opacity:.75;font-size:12px">${k}</div><div style="font-weight:700">${v}</div></div>`).join('');
+  pmFacts.innerHTML = (data.facts||[]).map(f=>`<div class="fact"><i class="fa-solid fa-star" style="opacity:.8"></i><div>${f}</div></div>`).join('');
+  quizData = (data.quiz||[]).map(q=>({q:q[0],a:q.slice(1,4),ok:q[4]})); qIdx=0; currentStreak=0; questionsAnswered=0;
+  qTitle.textContent = `${data.n||data.name||''} Quiz`;
+  pmModal.classList.add('on'); backdrop.classList.add('on');
+  if(data.isPlanet){ const name=data.n||data.name; if(name&&!visited.has(name)){ visited.add(name);localStorage.setItem('ce_visit_v1',JSON.stringify([...visited]));updateVisitedUI();award('first-visit',10,"First Steps","Visited your first planet");if(window.fireConfetti)window.fireConfetti();}}
+}
+function closePlanet() {
+  pmModal.classList.remove('on');
+  if (!quizModal.classList.contains('on')) { backdrop.classList.remove('on'); toggleSceneInteraction(true); toggleBodyScroll(true); }
+}
+function startQuiz() { if(!quizData.length){return;} quizModal.classList.add('on'); renderQuestion(); }
+function renderQuestion() {
+  if (qIdx >= quizData.length) { finishQuiz(); return; }
+  const it = quizData[qIdx]; qQuestion.textContent = it.q; qOpts.innerHTML = ''; qFeedback.textContent = ''; qNext.style.display = 'none';
+  it.a.forEach(opt => { const b=document.createElement('button'); b.textContent=opt; b.onclick=()=>answer(b,opt,it.ok); qOpts.appendChild(b); });
+}
+function answer(btn, sel, ok) {
+  [...qOpts.querySelectorAll('button')].forEach(b=>b.disabled=true);
+  if (sel === ok) {
+    btn.classList.add('correct'); qFeedback.textContent = 'Correct!'; qFeedback.style.color = 'var(--ok)';
+    currentStreak++; questionsAnswered++;
+    if (!quizzesCompleted.has(currentPlanet.n)) { addPoints(10); }
+    if (currentStreak === 3) { award('streak3', 15, 'On a Roll!', '3 correct in a row'); }
+  } else {
+    btn.classList.add('incorrect');
+    [...qOpts.querySelectorAll('button')].forEach(b => { if (b.textContent===ok) b.classList.add('correct'); });
+    qFeedback.textContent='Correct: '+ok; qFeedback.style.color='var(--bad)'; currentStreak=0;
+  }
+  qIdx++; qNext.style.display='inline-block';
+}
+function nextQuestion() { renderQuestion(); }
+function finishQuiz() {
+  closeQuiz();
+  const quizAlreadyCompleted = quizzesCompleted.has(currentPlanet.n);
+  if (questionsAnswered > 0 && !quizAlreadyCompleted) {
+    toast("Quiz complete! +20 pts"); addPoints(20); award('quiz-complete', 20, 'Quiz Whiz', 'Completed a planet quiz');
+    quizzesCompleted.add(currentPlanet.n); localStorage.setItem('ce_quiz_v1', JSON.stringify([...quizzesCompleted]));
+    if (window.fireConfetti) { window.fireConfetti(); }
+  } else if (questionsAnswered > 0 && quizAlreadyCompleted) {
+      toast("Quiz complete! You've already earned points for this one.");
+  } else { toast("Quiz closed."); }
+}
+function closeQuiz() {
+  quizModal.classList.remove('on');
+  if (!pmModal.classList.contains('on')) { backdrop.classList.remove('on'); toggleSceneInteraction(true); toggleBodyScroll(true); }
+}
+
+// Points and achievements
+function addPoints(n) { points+=n; pointsText.textContent=`${points} pts`; updateLevel(); localStorage.setItem('ce_points_v1',points); }
+function award(key, bonus, title, desc) {
+  if (achievements.has(key)) return;
+  achievements.add(key); localStorage.setItem('ce_achs_v1', JSON.stringify([...achievements]));
+  addBadge(key, title); addPoints(bonus); toast(`${title} (+${bonus} pts)`);
+}
+function addBadge(key, title) {
+  const div=document.createElement('div'); div.className='badge'; div.dataset.key=key;
+  div.innerHTML=`<i class="fa-solid fa-trophy"></i><span>${title}</span>`; badgesEl.appendChild(div);
+}
+function rebuildBadges() {
+  badgesEl.innerHTML='';
+  for(const key of achievements){ const title=({'first-visit':'First Steps','streak3':'On a Roll!','quiz-complete':'Quiz Whiz','all-planets':'Grand Tour','inner-worlds':'Inner Worlds','gas-giants':'Gas Giant Guru'})[key]||key; addBadge(key,title); }
+}
+function postVisitChecks() {
+  if(["Mercury","Venus","Earth","Mars"].every(p=>visited.has(p))){award('inner-worlds',15,'Inner Worlds','Visited all terrestrial planets');}
+  if(["Jupiter","Saturn","Uranus","Neptune"].every(p=>visited.has(p))){award('gas-giants',15,'Gas Giant Guru','Visited all gas/ice giants');}
+  if(DATA.every(p=>p.isPlanet?visited.has(p.n):true)){award('all-planets',30,'Grand Tour','Visited all 8 planets');}
+}
+
+// Coach / Tutorial
+function buildSteps() { steps = [ { sel:'#canvas', title:'Explore the Cosmos', text:'Drag to orbit, pinch/scroll to zoom, and use a two-finger drag to tilt the camera view.', place:'center' }, { sel:'#btnLabels', title:'Toggle Planet Labels', text:'Click this button to show or hide planet names. You can tap a label to open its info panel.', place:'top' }, { sel:'#btnMotion', title:'Pause Animation', text:'Use this to pause or resume the orbital motion of the planets.', place:'top' }, { sel:'#btnOrbits', title:'Show Orbit Paths', text:'This button reveals the orbital paths of each planet around the Sun.', place:'top' } ]; }
+function startCoach(force=false) { if(!force && localStorage.getItem('ce_coach_done')==='yes'){return;} cIdx=0; buildSteps(); coach.root.classList.add('on'); layoutCoach(); }
+function endCoach() { coach.root.classList.remove('on'); if(coach.never.checked){localStorage.setItem('ce_coach_done','yes');} }
+function bindCoachButtons() {
+    coach.skip.onclick=endCoach;
+    coach.next.onclick=()=>{ cIdx++; if(cIdx>=steps.length){endCoach();}else{layoutCoach();}};
+    coach.back.onclick=()=>{ if(cIdx>0){cIdx--;layoutCoach();}};
+}
+function layoutCoach() {
+  const s = steps[cIdx]; coach.title.textContent=s.title; coach.text.textContent=s.text;
+  coach.dots.innerHTML = steps.map((_,i)=>`<div class="dot${i===cIdx?' on':''}"></div>`).join('');
+  const t = document.querySelector(s.sel);
+  const r = t ? t.getBoundingClientRect() : {left:10,top:10,width:innerWidth-20,height:80};
+  const pad=8, x=r.left-pad, y=r.top-pad, w=r.width+pad*2, h=r.height+pad*2;
+  Object.assign(coach.spot.style, {left:x+'px',top:y+'px',width:w+'px',height:h+'px'});
+  const tipW = Math.min(innerWidth*.92,360); let tx=x+w/2-tipW/2, ty;
+  if (s.place==='top'){ ty=y-12-140; } else if(s.place==='center'){ tx=(innerWidth-tipW)/2; ty=Math.max(16,y+h+12); } else { ty=y+h+12; }
+  tx=Math.max(12,Math.min(tx,innerWidth-tipW-12)); ty=Math.max(12,Math.min(ty,innerHeight-160));
+  Object.assign(coach.tip.style, {left:tx+'px',top:ty+'px',width:tipW+'px'});
+}
+
+// Confetti effect
+(function(){const c=document.getElementById('confetti'),x=c.getContext('2d');let parts=[],run=false;function resize(){const dpr=Math.min(2,window.devicePixelRatio||1);c.width=innerWidth*dpr;c.height=innerHeight*dpr;c.style.width=innerWidth+'px';c.style.height=innerHeight+'px';x.setTransform(dpr,0,0,dpr,0,0);}resize();window.addEventListener('resize',resize);function loop(){x.clearRect(0,0,c.width,c.height);for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.vy+=0.18;p.vx+=0.004*Math.sin(p.r);p.x+=p.vx;p.y+=p.vy;p.r+=p.dr;p.alpha*=.993;p.life--;x.save();x.globalAlpha=Math.max(0,p.alpha);x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.color;x.fillRect(-p.w/2,-p.h/2,p.w,p.h);x.restore();if(p.life<=0||p.y>innerHeight*2){parts.splice(i,1);}}if(parts.length){requestAnimationFrame(loop);}else{run=false;x.clearRect(0,0,c.width,c.height);}}window.fireConfetti=function(){const cnt=innerWidth<600?100:200,pal=['#00F5FF','#FF00FF','#FFFF00','#FFFFFF','#FFD166'],sy=innerHeight*.25;function add(px){for(let i=0;i<cnt/2;i++){const ang=-Math.PI/2+(Math.random()-.5)*(Math.PI/1.2),sp=6+Math.random()*5;parts.push({x:px,y:sy,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp,w:6+Math.random()*6,h:10+Math.random()*10,r:Math.random()*Math.PI,dr:(Math.random()-.5)*.4,alpha:.9-Math.random()*.2,life:120+Math.random()*40,color:pal[Math.floor(Math.random()*pal.length)]});}}add(innerWidth*.3);add(innerWidth*.7);if(!run){run=true;loop();}}})();
+
+// UI Bindings and Main App Logic
 function bindUI() {
-  window.addEventListener('resize', () => {
-    camera.aspect = innerWidth / innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth, innerHeight);
-  });
-  
+  window.addEventListener('resize', ()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
   const canvas = renderer.domElement;
-
-  canvas.addEventListener('click', e => {
-    const hit = pickPlanet(e.clientX, e.clientY);
-    if (hit) {
-      openPlanet(hit.userData);
-    }
-  });
-  
+  canvas.addEventListener('click',e=>{const hit=pickPlanet(e.clientX,e.clientY);if(hit){openPlanet(hit.userData);}});
   canvas.addEventListener('touchend', e => {
-    if (!e.changedTouches || !e.changedTouches[0]) {
-      return;
-    }
-    
+    if (!e.changedTouches || !e.changedTouches[0]) return;
     const t = e.changedTouches[0];
-    const hit = pickPlanet(t.clientX, t.clientY, 36);
-    if (hit) {
-      openPlanet(hit.userData);
-    }
+    const hit = pickPlanet(t.clientX, t.clientY);
+    if (hit) openPlanet(hit.userData);
   });
-
-  btnLabels.onclick = () => {
-    showLabels = !showLabels;
-    btnLabels.classList.toggle('active', showLabels);
-  };
-  
-  btnMotion.onclick = () => {
-    isMotion = !isMotion;
-    btnMotion.classList.toggle('active', isMotion);
-    btnMotion.querySelector('i').className = isMotion ? 'fa-solid fa-pause' : 'fa-solid fa-play';
-  };
-  
-  btnOrbits.onclick = () => {
-    showOrbits = !showOrbits;
-    orbitRings.forEach(r => r.visible = showOrbits);
-    btnOrbits.classList.toggle('active', showOrbits);
-  };
-  
-  btnHelp.onclick = () => startCoach(true);
-  
-  pmClose.onclick = closePlanet;
-  qClose.onclick = closeQuiz;
-  qClose2.onclick = closeQuiz;
-
-  btnAchievements.onclick = () => {
-    achDrawer.classList.toggle('on');
-  };
+  btnLabels.onclick=()=>{showLabels=!showLabels;btnLabels.classList.toggle('active',showLabels);};
+  btnMotion.onclick=()=>{isMotion=!isMotion;btnMotion.classList.toggle('active',isMotion);btnMotion.querySelector('i').className=isMotion?'fa-solid fa-pause':'fa-solid fa-play';};
+  btnOrbits.onclick=()=>{showOrbits=!showOrbits;orbitRings.forEach(r=>r.visible=showOrbits);btnOrbits.classList.toggle('active',showOrbits);};
+  btnHelp.onclick=()=>startCoach(true);pmClose.onclick=closePlanet;qClose.onclick=closeQuiz;qClose2.onclick=closeQuiz;
+  btnAchievements.onclick=()=>achDrawer.classList.toggle('on');pmQuizBtn.onclick=startQuiz;qNext.onclick=nextQuestion;
 }
-
-function pickPlanet(clientX, clientY, screenDist = 0) {
+function pickPlanet(clientX, clientY) {
   const rect = renderer.domElement.getBoundingClientRect();
-  const mx = ((clientX - rect.left) / rect.width) * 2 - 1,
-        my = -((clientY - rect.top) / rect.height) * 2 + 1;
-        
-  const ray = new THREE.Raycaster();
-  ray.setFromCamera(new THREE.Vector2(mx, my), camera);
-  
-  const hits = ray.intersectObjects([sun, ...planets], true);
-  if (hits.length > 0) {
-    return hits[0].object;
-  }
-  
-  if (screenDist > 0) {
-    let best = null,
-        bestD = screenDist;
-    const v = new THREE.Vector3();
-    
-    planets.forEach(p => {
-      v.copy(p.position).project(camera);
-      const x = (v.x * 0.5 + 0.5) * innerWidth,
-            y = (-v.y * 0.5 + 0.5) * innerHeight;
-      const d = Math.hypot(x - clientX, y - clientY);
-      
-      if (d < bestD) {
-        bestD = d;
-        best = p;
-      }
-    });
-    
-    return best;
-  }
-  
-  return null;
+  const mx=((clientX-rect.left)/rect.width)*2-1, my=-((clientY-rect.top)/rect.height)*2+1;
+  raycaster.setFromCamera(new THREE.Vector2(mx,my), camera);
+  const hits = raycaster.intersectObjects([sun, ...planets], true);
+  return hits.length > 0 ? hits[0].object : null;
 }
+function updateVisitedUI() { visitedText.textContent=`${visited.size} / 8 Visited`; postVisitChecks(); }
+function initCounters() { pointsText.textContent=`${points} pts`; updateLevel(); rebuildBadges(); }
 
-/* ---------- Stats init ---------- */
-function updateVisitedUI() {
-  visitedText.textContent = `${visited.size} / 8 Visited`;
-  postVisitChecks();
-}
-
-function initCounters() {
-  pointsText.textContent = `${points} pts`;
-  updateLevel();
-  rebuildBadges();
-}
-
-/* ---------- Animation loop ---------- */
-let lastTime = performance.now();
-
+// Animation Loop
+let lastTime=performance.now();
 function tick() {
   requestAnimationFrame(tick);
-  
-  const now = performance.now();
-  const dt = (now - lastTime) / 1000;
-  lastTime = now;
-
-  if (isMotion && sun) {
+  const now=performance.now(), dt=(now-lastTime)/1000; lastTime=now;
+  if(isMotion && sun){
     const t = clock.getElapsedTime();
     sun.rotation.y += 0.0015;
-    
-    planets.forEach((p, i) => {
-      p.rotation.y += (p.userData.rot || 1) * 0.01;
-      const a = t * (p.userData.orb || 1) * 0.4 + p.userData.angle;
+    planets.forEach((p,i)=>{
+      p.rotation.y += (p.userData.rot||1)*.01;
+      const a = t*(p.userData.orb||1)*.4 + p.userData.angle;
       p.position.x = Math.cos(a) * p.userData.d;
       p.position.z = Math.sin(a) * p.userData.d;
-      
-      if (orbitRings[i]) {
-        orbitRings[i].rotation.x = Math.PI / 2;
-      }
     });
-    
-    updateMoons();
   }
-  
   updateStars(dt);
   updateMeteors(dt);
   updateComets(dt);
   updateShootingStars(dt);
   randomCosmicEvent();
-  controls.update();
+  if(controls && controls.enabled) { controls.update(); }
   updateLabels();
   renderer.render(scene, camera);
 }
 
-/* ---------- Bootstrap ---------- */
+// Bootstrap
 function bootstrap() {
   setStatus('Initializing…');
+  if(typeof THREE==='undefined'){hideLoader();document.getElementById('errmsg').textContent='Startup error: Three.js not loaded.';document.getElementById('err').classList.add('show');return;}
+  const canvas = document.createElement('canvas'); const gl = canvas.getContext('webgl')||canvas.getContext('experimental-webgl');
+  if(!gl){hideLoader();document.getElementById('errmsg').textContent='WebGL is not available on this device/browser.';document.getElementById('err').classList.add('show');return;}
   
-  // Check if Three.js is loaded
-  if (typeof THREE === 'undefined') {
-    hideLoader();
-    document.getElementById('errmsg').textContent = 'Startup error: Three.js not loaded.';
-    document.getElementById('err').classList.add('show');
-    return;
-  }
-  
-  // Check for WebGL support
-  const canvas = document.createElement('canvas');
-  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-  
-  if (!gl) {
-    hideLoader();
-    document.getElementById('errmsg').textContent = 'WebGL is not available on this device/browser.';
-    document.getElementById('err').classList.add('show');
-    return;
-  }
-
-  // Initialize renderer
   const dpr = Math.min(2, window.devicePixelRatio || 1);
-  renderer = new THREE.WebGLRenderer({
-    antialias: true,
-    canvas: document.getElementById('canvas')
-  });
-  renderer.setPixelRatio(dpr);
-  renderer.setSize(innerWidth, innerHeight);
-  
-  // Initialize scene and camera
+  renderer = new THREE.WebGLRenderer({ antialias: true, canvas: document.getElementById('canvas') });
+  renderer.setPixelRatio(dpr); renderer.setSize(innerWidth, innerHeight);
   scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 2000);
+  camera = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, 0.1, 2000);
   camera.position.set(0, 40, 110);
-  
-  // Initialize controls
   controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.06;
-  controls.minDistance = 20;
-  controls.maxDistance = 260;
-
-  // Lights
+  controls.enableDamping=true; controls.dampingFactor=0.06; controls.minDistance=20; controls.maxDistance=260;
+  
   scene.add(new THREE.AmbientLight(0x404040, 1.4));
   const sunLight = new THREE.PointLight(0xffffff, 3.2, 2000);
-  sunLight.position.set(0, 0, 0);
   scene.add(sunLight);
-
-  // Stars (3 layered fields)
-  createStarLayer(4500, 0.7, 0.9, 0.4);
-  createStarLayer(3000, 1.0, 1.4, 0.7);
-  createStarLayer(2000, 1.4, 1.9, 1.0);
-
-  setStatus('Building solar system…');
-  createSun();
-  createPlanets();
-  createAsteroidBelt();
-
-  raycaster = new THREE.Raycaster();
-  mouse = new THREE.Vector2();
-  clock = new THREE.Clock();
-
-  bindUI();
-  initCounters();
-  updateVisitedUI();
   
-  // Show character guide after a delay
-  setTimeout(() => {
-    showCharacterGuide();
-    // Set up interval to show character guide periodically
-    setInterval(showCharacterGuide, 30000); // Every 30 seconds
-  }, 5000);
+  createStarLayer(4500,0.7,0.9,0.4); createStarLayer(3000,1.0,1.4,0.7); createStarLayer(2000,1.4,1.9,1.0);
+  setStatus('Building solar system…');
+  createSun(); createPlanets();
+  raycaster=new THREE.Raycaster(); mouse=new THREE.Vector2(); clock=new THREE.Clock();
+  
+  bindUI(); bindCoachButtons(); initCounters(); updateVisitedUI();
+  
+  setTimeout(() => { showCharacterGuide(); setInterval(showCharacterGuide, 30000); }, 5000);
   
   setStatus('Ready!');
   hideLoader();
   tick();
 }
 
-// Start the application when the page loads
-window.addEventListener('load', bootstrap);
-
-/* ---------- Toast function ---------- */
 function toast(msg) {
-  const d = document.createElement('div');
-  d.textContent = msg;
-  Object.assign(d.style, {
-    position: 'fixed',
-    left: '50%',
-    bottom: '18px',
-    transform: 'translateX(-50%)',
-    background: 'rgba(0,0,0,.8)',
-    border: '1px solid rgba(255,255,255,.2)',
-    padding: '8px 12px',
-    borderRadius: '999px',
-    zIndex: '120',
-    opacity: '0',
-    transition: '.2s'
-  });
-  
-  document.body.appendChild(d);
-  requestAnimationFrame(() => {
-    d.style.opacity = '1';
-  });
-  
-  setTimeout(() => {
-    d.style.opacity = '0';
-    setTimeout(() => d.remove(), 200);
-  }, 1500);
+  const d=document.createElement('div');d.textContent=msg;Object.assign(d.style,{position:'fixed',left:'50%',bottom:'18px',transform:'translateX(-50%)',background:'rgba(0,0,0,.8)',border:'1px solid rgba(255,255,255,.2)',padding:'8px 12px',borderRadius:'999px',zIndex:'120',opacity:'0',transition:'.2s'});
+  document.body.appendChild(d); requestAnimationFrame(()=>{d.style.opacity='1';});
+  setTimeout(()=>{d.style.opacity='0';setTimeout(()=>d.remove(),200);},1500);
 }
+
+window.addEventListener('load', bootstrap);
 </script>
 </body>
 </html>
